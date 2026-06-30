@@ -120,7 +120,83 @@
             .layout-list .site-grid a { padding: 5px 8px; font-size: 12px; }
         }
     </style>
-</head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=ZCOOL+XiaoWei&family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;700&display=swap" rel="stylesheet">
+    <style id="effectStyles">
+        /* ===== 文字特效 ===== */
+        .effect-marquee {
+            display: inline-block;
+            white-space: nowrap;
+            overflow: hidden;
+            animation: marqueeAnim 6s linear infinite;
+        }
+        @keyframes marqueeAnim {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+        .effect-typing {
+            overflow: hidden;
+            white-space: nowrap;
+            border-right: 2px solid currentColor;
+            animation: typingAnim 3s steps(20) forwards, blinkCursor 0.8s step-end infinite;
+            width: fit-content;
+            max-width: 100%;
+        }
+        @keyframes typingAnim {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+        @keyframes blinkCursor {
+            50% { border-color: transparent; }
+        }
+        .effect-fade {
+            animation: fadeAnim 3s ease-in-out infinite;
+        }
+        @keyframes fadeAnim {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+        .effect-blink {
+            animation: blinkAnim 1.2s step-end infinite;
+        }
+        @keyframes blinkAnim {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+        .effect-neon {
+            text-shadow:
+                0 0 5px currentColor,
+                0 0 10px currentColor,
+                0 0 20px currentColor,
+                0 0 40px currentColor,
+                0 0 80px currentColor;
+            animation: neonPulse 2s ease-in-out infinite alternate;
+        }
+        @keyframes neonPulse {
+            from { text-shadow: 0 0 5px currentColor, 0 0 10px currentColor, 0 0 20px currentColor; }
+            to { text-shadow: 0 0 10px currentColor, 0 0 20px currentColor, 0 0 40px currentColor, 0 0 80px currentColor; }
+        }
+
+        /* ===== Logo 区域 ===== */
+        .logo-area {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 10px;
+        }
+        .logo-area.vertical {
+            flex-direction: column;
+            gap: 8px;
+        }
+        .logo-area .logo-img { max-width: 120px; max-height: 120px; border-radius: 16px; }
+        .logo-area .logo-text {
+            font-size: 48px;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+    </style>
 <body>
 <div class="bg-stars"></div>
 <div class="container">
@@ -134,9 +210,15 @@
             <button data-layout="list" title="条目模式" onclick="setLayout('list')">📋</button>
         </div>
         <div class="search-section">
-            <img id="siteLogo" class="logo-img" style="display:none">
-            <h1 id="siteTitle">🏠 东白湖之家</h1>
-            <p id="siteSubtitle">上网从这里开始 · 收录精品网站</p>
+            <div class="logo-area" id="logoArea">
+                <img id="siteLogo" class="logo-img" style="display:none">
+                <div id="siteTitleContainer">
+                    <h1 id="siteTitle">🏠 东白湖之家</h1>
+                </div>
+            </div>
+            <div id="siteSubtitleContainer">
+                <p id="siteSubtitle">上网从这里开始 · 收录精品网站</p>
+            </div>
             <div class="search-box">
                 <select id="searchEngine"></select>
                 <input type="text" id="searchInput" placeholder="搜索你想要的..." autofocus>
@@ -146,8 +228,12 @@
         </div>
         <div class="categories" id="categories"></div>
         <div class="footer">
-            <p id="footerText">🏠 东白湖之家 · 上网从这里开始</p>
-            <p id="footerICP"></p>
+            <div id="footerTextContainer">
+                <p id="footerText">🏠 东白湖之家 · 上网从这里开始</p>
+            </div>
+            <div id="footerICPContainer">
+                <p id="footerICP"></p>
+            </div>
             <p><a href="https://blog.dbhzj.top">东白湖之家</a> · <a href="https://blog.dbhzj.top">blog.dbhzj.top</a></p>
         </div>
     </div>
@@ -236,21 +322,101 @@ function applyConfig() {
     }
 }
 
+// ===== 文字特效辅助函数 =====
+function applyTextStyle(el, config, prefix) {
+    if (!el || !config) return;
+    const font = config[prefix + '_font'];
+    const size = config[prefix + '_size'];
+    const color = config[prefix + '_color'];
+    const opacity = config[prefix + '_opacity'];
+    const effect = config[prefix + '_effect'];
+
+    const style = {};
+    if (font) style.fontFamily = `"${font}", sans-serif`;
+    if (size) style.fontSize = size + 'px';
+    if (color) style.color = color;
+    if (opacity !== undefined && opacity !== null) style.opacity = opacity;
+
+    Object.assign(el.style, style);
+
+    // 移除旧特效类
+    el.className.split(' ').filter(c => c.startsWith('effect-')).forEach(c => el.classList.remove(c));
+    if (effect && effect !== 'none') {
+        el.classList.add('effect-' + effect);
+    }
+}
+
 function render() {
     if (!data) return;
 
-    // Logo
-    if (config && config.site_logo) {
-        const logoImg = document.getElementById('siteLogo');
-        logoImg.src = config.site_logo;
-        logoImg.style.display = 'inline';
-        // 隐藏标题
-        document.getElementById('siteTitle').style.display = 'none';
+    // ---- Logo 区域 ----
+    const logoArea = document.getElementById('logoArea');
+    const logoImg = document.getElementById('siteLogo');
+    const titleContainer = document.getElementById('siteTitleContainer');
+    const siteTitleEl = document.getElementById('siteTitle');
+
+    // 布局方向
+    logoArea.classList.remove('vertical');
+    if (config?.logo_layout === 'vertical') {
+        logoArea.classList.add('vertical');
     }
 
-    document.getElementById('siteTitle').textContent = config?.site_title || data.site.title;
-    document.getElementById('siteSubtitle').textContent = config?.site_subtitle || data.site.subtitle;
-    document.getElementById('footerText').textContent = config?.site_footer || data.site.footer;
+    if (config?.logo_type === 'image' && config?.site_logo) {
+        // 图片模式
+        logoImg.src = config.site_logo;
+        logoImg.style.display = 'inline';
+        logoImg.style.objectFit = config.logo_fit || 'contain';
+        siteTitleEl.style.display = 'none';
+    } else if (config?.logo_type === 'text' && config?.logo_text) {
+        // 文字Logo模式
+        logoImg.style.display = 'none';
+        siteTitleEl.style.display = 'block';
+        siteTitleEl.textContent = config.logo_text;
+        applyTextStyle(siteTitleEl, config, 'logo_text');
+        // 移除渐变色（文字Logo不应有渐变）
+        siteTitleEl.style.background = 'none';
+        siteTitleEl.style.webkitTextFillColor = 'unset';
+        siteTitleEl.style.backgroundClip = 'unset';
+        siteTitleEl.style.webkitBackgroundClip = 'unset';
+    } else {
+        // 默认：文字标题
+        logoImg.style.display = 'none';
+        siteTitleEl.style.display = 'block';
+        siteTitleEl.textContent = config?.site_title || data.site.title;
+        // 标题渐变恢复
+        siteTitleEl.style.background = 'linear-gradient(90deg, #667eea, #764ba2, #f093fb)';
+        siteTitleEl.style.webkitBackgroundClip = 'text';
+        siteTitleEl.style.webkitTextFillColor = 'transparent';
+        siteTitleEl.style.backgroundClip = 'text';
+        siteTitleEl.style.fontSize = '';
+        siteTitleEl.style.fontFamily = '';
+        siteTitleEl.style.opacity = '';
+    }
+
+    // ---- 标题样式（非文字Logo模式时） ----
+    if (config?.logo_type !== 'text' || !config?.logo_text) {
+        applyTextStyle(siteTitleEl, config, 'site_title');
+        // 如果设置了特效但非文字Logo模式，保留渐变标题
+        if (!(config?.logo_type === 'text' && config?.logo_text)) {
+            const effect = config?.site_title_effect;
+            if (!effect || effect === 'none') {
+                siteTitleEl.style.background = 'linear-gradient(90deg, #667eea, #764ba2, #f093fb)';
+                siteTitleEl.style.webkitBackgroundClip = 'text';
+                siteTitleEl.style.webkitTextFillColor = 'transparent';
+                siteTitleEl.style.backgroundClip = 'text';
+            }
+        }
+    }
+
+    // ---- 副标题 ----
+    const subtitleEl = document.getElementById('siteSubtitle');
+    subtitleEl.textContent = config?.site_subtitle || data.site.subtitle;
+    applyTextStyle(subtitleEl, config, 'site_subtitle');
+
+    // ---- 底部文字 ----
+    const footerTextEl = document.getElementById('footerText');
+    footerTextEl.textContent = config?.site_footer || data.site.footer;
+    applyTextStyle(footerTextEl, config, 'site_footer');
     document.getElementById('footerICP').textContent = config?.site_icp || '';
 
     // 搜索引擎

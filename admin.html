@@ -291,6 +291,51 @@
         input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
         input[type="color"]::-webkit-color-swatch { border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; }
 
+        .style-toggle {
+            cursor: pointer;
+            padding: 8px 12px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 8px;
+            font-size: 13px;
+            color: #888;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+            user-select: none;
+        }
+        .style-toggle:hover {
+            background: rgba(255,255,255,0.06);
+            color: #aaa;
+            border-color: rgba(255,255,255,0.12);
+        }
+        .style-toggle.open { color: #60a5fa; border-color: rgba(96,165,250,0.3); background: rgba(96,165,250,0.08); }
+        .style-panel {
+            display: none;
+            margin-top: 10px;
+            padding: 14px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 10px;
+        }
+        .style-panel.open { display: block; }
+        .style-panel .form-row { grid-template-columns: 1fr 1fr; }
+        .icon-sync-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .icon-sync-group input[type="color"] {
+            width: 40px; height: 36px; padding: 2px;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 6px; cursor: pointer;
+            background: transparent;
+        }
+        .opacity-display {
+            font-size: 13px; color: #888; min-width: 36px;
+        }
+
         @media (max-width: 768px) {
             .form-row { grid-template-columns: 1fr; }
             .header { flex-direction: column; gap: 10px; }
@@ -334,10 +379,172 @@
     <div class="section">
         <div class="section-title">📝 基本设置</div>
         <div class="form-row">
-            <div class="form-group"><label>网站标题</label><input id="siteTitle" placeholder="东白湖之家"></div>
-            <div class="form-group"><label>副标题</label><input id="siteSubtitle" placeholder="东白湖 · 上网从这里开始"></div>
+            <div class="form-group">
+                <label>网站标题</label>
+                <input id="siteTitle" placeholder="东白湖之家">
+                <div style="margin-top:6px;">
+                    <div class="style-toggle" onclick="toggleStylePanel('titleStylePanel', this)">
+                        🎨 标题样式设置 ▾
+                    </div>
+                    <div class="style-panel" id="titleStylePanel">
+                        <div class="form-row" style="margin-bottom:12px;">
+                            <div class="form-group">
+                                <label>字体</label>
+                                <select id="siteTitleFont">
+                                    <option value="">默认字体</option>
+                                    <option value="PingFang SC">PingFang SC</option>
+                                    <option value="Microsoft YaHei">Microsoft YaHei</option>
+                                    <option value="Noto Serif SC">Noto Serif SC</option>
+                                    <option value="ZCOOL XiaoWei">ZCOOL XiaoWei</option>
+                                    <option value="Ma Shan Zheng">Ma Shan Zheng</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>字号 (px)</label>
+                                <input id="siteTitleSize" type="number" min="8" max="200" placeholder="36">
+                            </div>
+                        </div>
+                        <div class="form-row" style="margin-bottom:12px;">
+                            <div class="form-group">
+                                <label>颜色</label>
+                                <div class="icon-sync-group">
+                                    <input id="siteTitleColor" type="color" value="#ffffff">
+                                    <input id="siteTitleColorText" placeholder="#ffffff" style="flex:1;">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>透明度</label>
+                                <div style="display:flex;gap:12px;align-items:center;">
+                                    <input id="siteTitleOpacity" type="range" min="0" max="1" step="0.05" value="1" style="flex:1;">
+                                    <span class="opacity-display" id="siteTitleOpacityValue">1.00</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>特效</label>
+                            <select id="siteTitleEffect">
+                                <option value="none">无</option>
+                                <option value="marquee">滚动（marquee）</option>
+                                <option value="typing">打字机效果</option>
+                                <option value="fade">淡入淡出</option>
+                                <option value="blink">闪烁</option>
+                                <option value="neon">霓虹光效</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>副标题</label>
+                <input id="siteSubtitle" placeholder="东白湖 · 上网从这里开始">
+                <div style="margin-top:6px;">
+                    <div class="style-toggle" onclick="toggleStylePanel('subtitleStylePanel', this)">
+                        🎨 副标题样式设置 ▾
+                    </div>
+                    <div class="style-panel" id="subtitleStylePanel">
+                        <div class="form-row" style="margin-bottom:12px;">
+                            <div class="form-group">
+                                <label>字体</label>
+                                <select id="siteSubtitleFont">
+                                    <option value="">默认字体</option>
+                                    <option value="PingFang SC">PingFang SC</option>
+                                    <option value="Microsoft YaHei">Microsoft YaHei</option>
+                                    <option value="Noto Serif SC">Noto Serif SC</option>
+                                    <option value="ZCOOL XiaoWei">ZCOOL XiaoWei</option>
+                                    <option value="Ma Shan Zheng">Ma Shan Zheng</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>字号 (px)</label>
+                                <input id="siteSubtitleSize" type="number" min="8" max="200" placeholder="18">
+                            </div>
+                        </div>
+                        <div class="form-row" style="margin-bottom:12px;">
+                            <div class="form-group">
+                                <label>颜色</label>
+                                <div class="icon-sync-group">
+                                    <input id="siteSubtitleColor" type="color" value="#aaaaaa">
+                                    <input id="siteSubtitleColorText" placeholder="#aaaaaa" style="flex:1;">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>透明度</label>
+                                <div style="display:flex;gap:12px;align-items:center;">
+                                    <input id="siteSubtitleOpacity" type="range" min="0" max="1" step="0.05" value="1" style="flex:1;">
+                                    <span class="opacity-display" id="siteSubtitleOpacityValue">1.00</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>特效</label>
+                            <select id="siteSubtitleEffect">
+                                <option value="none">无</option>
+                                <option value="marquee">滚动（marquee）</option>
+                                <option value="typing">打字机效果</option>
+                                <option value="fade">淡入淡出</option>
+                                <option value="blink">闪烁</option>
+                                <option value="neon">霓虹光效</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="form-group"><label>底部文字</label><input id="siteFooter" placeholder="🏠 东白湖之家 · 上网从这里开始"></div>
+        <div class="form-group">
+            <label>底部文字</label>
+            <input id="siteFooter" placeholder="🏠 东白湖之家 · 上网从这里开始">
+            <div style="margin-top:6px;">
+                <div class="style-toggle" onclick="toggleStylePanel('footerStylePanel', this)">
+                    🎨 底部文字样式设置 ▾
+                </div>
+                <div class="style-panel" id="footerStylePanel">
+                    <div class="form-row" style="margin-bottom:12px;">
+                        <div class="form-group">
+                            <label>字体</label>
+                            <select id="siteFooterFont">
+                                <option value="">默认字体</option>
+                                <option value="PingFang SC">PingFang SC</option>
+                                <option value="Microsoft YaHei">Microsoft YaHei</option>
+                                <option value="Noto Serif SC">Noto Serif SC</option>
+                                <option value="ZCOOL XiaoWei">ZCOOL XiaoWei</option>
+                                <option value="Ma Shan Zheng">Ma Shan Zheng</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>字号 (px)</label>
+                            <input id="siteFooterSize" type="number" min="8" max="200" placeholder="14">
+                        </div>
+                    </div>
+                    <div class="form-row" style="margin-bottom:12px;">
+                        <div class="form-group">
+                            <label>颜色</label>
+                            <div class="icon-sync-group">
+                                <input id="siteFooterColor" type="color" value="#888888">
+                                <input id="siteFooterColorText" placeholder="#888888" style="flex:1;">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>透明度</label>
+                            <div style="display:flex;gap:12px;align-items:center;">
+                                <input id="siteFooterOpacity" type="range" min="0" max="1" step="0.05" value="1" style="flex:1;">
+                                <span class="opacity-display" id="siteFooterOpacityValue">1.00</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>特效</label>
+                        <select id="siteFooterEffect">
+                            <option value="none">无</option>
+                            <option value="marquee">滚动（marquee）</option>
+                            <option value="typing">打字机效果</option>
+                            <option value="fade">淡入淡出</option>
+                            <option value="blink">闪烁</option>
+                            <option value="neon">霓虹光效</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="form-group"><label>ICP备案号</label><input id="siteIcp" placeholder="沪ICP备XXXXXXXX号-1"></div>
     </div>
 
@@ -406,30 +613,130 @@
             </div>
         </div>
 
-        <div class="form-row">
+        <!-- Logo 设置面板 -->
+        <div class="form-group" style="margin-bottom:16px;">
+            <label>Logo 类型</label>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                <label class="radio-card" data-value="image" onclick="onLogoTypeChange('image')">
+                    <input type="radio" name="logoType" value="image">
+                    <span>🖼️ 图片Logo</span>
+                </label>
+                <label class="radio-card" data-value="text" onclick="onLogoTypeChange('text')">
+                    <input type="radio" name="logoType" value="text">
+                    <span>✏️ 文字Logo</span>
+                </label>
+            </div>
+        </div>
+
+        <div id="logoImageGroup" class="form-group">
+            <label>图片Logo URL</label>
+            <div style="display:flex;gap:8px;">
+                <input id="siteLogo" placeholder="https://example.com/logo.png" style="flex:1;">
+                <button type="button" class="btn-ghost" onclick="uploadToField('siteLogo')" style="padding:8px 12px;font-size:12px;white-space:nowrap;">📤 上传</button>
+            </div>
+        </div>
+
+        <div id="logoTextGroup" class="form-group" style="display:none;">
             <div class="form-group">
-                <label>网站Logo (图片URL)</label>
-                <div style="display:flex;gap:8px;">
-                    <input id="siteLogo" placeholder="https://example.com/logo.png（留空显示文字标题）" style="flex:1;">
-                    <button type="button" class="btn-ghost" onclick="uploadToField('siteLogo')" style="padding:8px 12px;font-size:12px;white-space:nowrap;">📤 上传</button>
+                <label>文字Logo内容</label>
+                <input id="logoText" placeholder="东白湖之家">
+            </div>
+            <div style="margin-top:8px;">
+                <div class="style-toggle" onclick="toggleStylePanel('logoTextStylePanel', this)" style="margin-bottom:8px;">
+                    🎨 文字样式设置 ▾
+                </div>
+                <div class="style-panel" id="logoTextStylePanel">
+                    <div class="form-row" style="margin-bottom:12px;">
+                        <div class="form-group">
+                            <label>字体</label>
+                            <select id="logoTextFont">
+                                <option value="">默认字体</option>
+                                <option value="PingFang SC">PingFang SC</option>
+                                <option value="Microsoft YaHei">Microsoft YaHei</option>
+                                <option value="Noto Serif SC">Noto Serif SC</option>
+                                <option value="ZCOOL XiaoWei">ZCOOL XiaoWei</option>
+                                <option value="Ma Shan Zheng">Ma Shan Zheng</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>字号 (px)</label>
+                            <input id="logoTextSize" type="number" min="8" max="200" placeholder="48">
+                        </div>
+                    </div>
+                    <div class="form-row" style="margin-bottom:12px;">
+                        <div class="form-group">
+                            <label>颜色</label>
+                            <div class="icon-sync-group">
+                                <input id="logoTextColor" type="color" value="#ffffff">
+                                <input id="logoTextColorText" placeholder="#ffffff" style="flex:1;">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>透明度</label>
+                            <div style="display:flex;gap:12px;align-items:center;">
+                                <input id="logoTextOpacity" type="range" min="0" max="1" step="0.05" value="1" style="flex:1;">
+                                <span class="opacity-display" id="logoTextOpacityValue">1.00</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>特效</label>
+                        <select id="logoTextEffect">
+                            <option value="none">无</option>
+                            <option value="marquee">滚动（marquee）</option>
+                            <option value="typing">打字机效果</option>
+                            <option value="fade">淡入淡出</option>
+                            <option value="blink">闪烁</option>
+                            <option value="neon">霓虹光效</option>
+                        </select>
+                    </div>
                 </div>
             </div>
-            <div class="form-group">
-                <label>强调色 (主题色)</label>
-                <div style="display:flex;gap:10px;align-items:center;">
-                    <input id="accentColor" type="color" value="#667eea" style="width:50px;height:40px;padding:2px;border:none;border-radius:6px;cursor:pointer;background:transparent;">
-                    <input id="accentColorText" placeholder="#667eea" style="width:130px;">
-                </div>
-                <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">
-                    <button type="button" class="color-preset" data-value="#667eea" style="background:#667eea" title="默认紫"></button>
-                    <button type="button" class="color-preset" data-value="#3b82f6" style="background:#3b82f6" title="蓝色"></button>
-                    <button type="button" class="color-preset" data-value="#06b6d4" style="background:#06b6d4" title="青色"></button>
-                    <button type="button" class="color-preset" data-value="#22c55e" style="background:#22c55e" title="绿色"></button>
-                    <button type="button" class="color-preset" data-value="#f59e0b" style="background:#f59e0b" title="金色"></button>
-                    <button type="button" class="color-preset" data-value="#ef4444" style="background:#ef4444" title="红色"></button>
-                    <button type="button" class="color-preset" data-value="#ec4899" style="background:#ec4899" title="粉色"></button>
-                    <button type="button" class="color-preset" data-value="#a855f7" style="background:#a855f7" title="紫色"></button>
-                </div>
+        </div>
+
+        <div class="form-group">
+            <label>Logo 布局方向</label>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                <label class="radio-card" data-value="horizontal" onclick="onLogoLayoutChange('horizontal')">
+                    <input type="radio" name="logoLayout" value="horizontal">
+                    <span>横向（左右）</span>
+                </label>
+                <label class="radio-card" data-value="vertical" onclick="onLogoLayoutChange('vertical')">
+                    <input type="radio" name="logoLayout" value="vertical">
+                    <span>纵向（上下）</span>
+                </label>
+            </div>
+        </div>
+
+        <div id="logoFitGroup" class="form-group">
+            <label>图片缩放模式</label>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                <label class="radio-card" data-value="contain" onclick="onLogoFitChange('contain')">
+                    <input type="radio" name="logoFit" value="contain">
+                    <span>按比例</span>
+                </label>
+                <label class="radio-card" data-value="cover" onclick="onLogoFitChange('cover')">
+                    <input type="radio" name="logoFit" value="cover">
+                    <span>拉伸填充</span>
+                </label>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>强调色 (主题色)</label>
+            <div style="display:flex;gap:10px;align-items:center;">
+                <input id="accentColor" type="color" value="#667eea" style="width:50px;height:40px;padding:2px;border:none;border-radius:6px;cursor:pointer;background:transparent;">
+                <input id="accentColorText" placeholder="#667eea" style="width:130px;">
+            </div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">
+                <button type="button" class="color-preset" data-value="#667eea" style="background:#667eea" title="默认紫"></button>
+                <button type="button" class="color-preset" data-value="#3b82f6" style="background:#3b82f6" title="蓝色"></button>
+                <button type="button" class="color-preset" data-value="#06b6d4" style="background:#06b6d4" title="青色"></button>
+                <button type="button" class="color-preset" data-value="#22c55e" style="background:#22c55e" title="绿色"></button>
+                <button type="button" class="color-preset" data-value="#f59e0b" style="background:#f59e0b" title="金色"></button>
+                <button type="button" class="color-preset" data-value="#ef4444" style="background:#ef4444" title="红色"></button>
+                <button type="button" class="color-preset" data-value="#ec4899" style="background:#ec4899" title="粉色"></button>
+                <button type="button" class="color-preset" data-value="#a855f7" style="background:#a855f7" title="紫色"></button>
             </div>
         </div>
 
@@ -473,6 +780,7 @@
     <div class="section">
         <div class="section-title">
             📂 分类管理
+            <button onclick="reorderCategories()" style="padding:4px 12px;border-radius:6px;font-size:12px;cursor:pointer;border:none;background:rgba(96,165,250,0.2);color:#60a5fa;">🔄 刷新分类排序</button>
             <button onclick="addCategory()" style="margin-left:auto;padding:4px 12px;border-radius:6px;font-size:12px;cursor:pointer;border:none;background:rgba(34,197,94,0.2);color:#22c55e;">+ 添加分类</button>
         </div>
         <div id="categoryList"></div>
@@ -654,6 +962,70 @@ function renderConfig() {
 
     // Logo
     document.getElementById('siteLogo').value = config.site_logo || '';
+    // Logo 类型
+    const logoType = config.logo_type || 'image';
+    document.querySelectorAll('input[name="logoType"]').forEach(r => {
+        r.checked = (r.value === logoType);
+    });
+    document.querySelectorAll('.radio-card[data-value]').forEach(el => {
+        if (el.getAttribute('data-value') === 'image' || el.getAttribute('data-value') === 'text') {
+            el.classList.toggle('active', el.getAttribute('data-value') === logoType);
+        }
+    });
+    onLogoTypeChange(logoType);
+    // Logo 布局
+    const logoLayout = config.logo_layout || 'horizontal';
+    document.querySelectorAll('input[name="logoLayout"]').forEach(r => {
+        r.checked = (r.value === logoLayout);
+    });
+    document.querySelectorAll('.radio-card[data-value]').forEach(el => {
+        if (el.getAttribute('data-value') === 'horizontal' || el.getAttribute('data-value') === 'vertical') {
+            el.classList.toggle('active', el.getAttribute('data-value') === logoLayout);
+        }
+    });
+    // Logo 缩放模式
+    const logoFit = config.logo_fit || 'contain';
+    document.querySelectorAll('input[name="logoFit"]').forEach(r => {
+        r.checked = (r.value === logoFit);
+    });
+    document.querySelectorAll('.radio-card[data-value]').forEach(el => {
+        if (el.getAttribute('data-value') === 'contain' || el.getAttribute('data-value') === 'cover') {
+            el.classList.toggle('active', el.getAttribute('data-value') === logoFit);
+        }
+    });
+    // 文字 Logo 字段
+    document.getElementById('logoText').value = config.logo_text || '';
+    document.getElementById('logoTextFont').value = config.logo_text_font || '';
+    document.getElementById('logoTextSize').value = config.logo_text_size || 48;
+    document.getElementById('logoTextColor').value = config.logo_text_color || '#ffffff';
+    document.getElementById('logoTextColorText').value = config.logo_text_color || '#ffffff';
+    document.getElementById('logoTextOpacity').value = config.logo_text_opacity !== undefined ? config.logo_text_opacity : 1;
+    document.getElementById('logoTextOpacityValue').textContent = config.logo_text_opacity !== undefined ? Number(config.logo_text_opacity).toFixed(2) : '1.00';
+    document.getElementById('logoTextEffect').value = config.logo_text_effect || 'none';
+    // 标题样式
+    document.getElementById('siteTitleFont').value = config.site_title_font || '';
+    document.getElementById('siteTitleSize').value = config.site_title_size || 36;
+    document.getElementById('siteTitleColor').value = config.site_title_color || '#ffffff';
+    document.getElementById('siteTitleColorText').value = config.site_title_color || '#ffffff';
+    document.getElementById('siteTitleOpacity').value = config.site_title_opacity !== undefined ? config.site_title_opacity : 1;
+    document.getElementById('siteTitleOpacityValue').textContent = config.site_title_opacity !== undefined ? Number(config.site_title_opacity).toFixed(2) : '1.00';
+    document.getElementById('siteTitleEffect').value = config.site_title_effect || 'none';
+    // 副标题样式
+    document.getElementById('siteSubtitleFont').value = config.site_subtitle_font || '';
+    document.getElementById('siteSubtitleSize').value = config.site_subtitle_size || 18;
+    document.getElementById('siteSubtitleColor').value = config.site_subtitle_color || '#aaaaaa';
+    document.getElementById('siteSubtitleColorText').value = config.site_subtitle_color || '#aaaaaa';
+    document.getElementById('siteSubtitleOpacity').value = config.site_subtitle_opacity !== undefined ? config.site_subtitle_opacity : 1;
+    document.getElementById('siteSubtitleOpacityValue').textContent = config.site_subtitle_opacity !== undefined ? Number(config.site_subtitle_opacity).toFixed(2) : '1.00';
+    document.getElementById('siteSubtitleEffect').value = config.site_subtitle_effect || 'none';
+    // 底部文字样式
+    document.getElementById('siteFooterFont').value = config.site_footer_font || '';
+    document.getElementById('siteFooterSize').value = config.site_footer_size || 14;
+    document.getElementById('siteFooterColor').value = config.site_footer_color || '#888888';
+    document.getElementById('siteFooterColorText').value = config.site_footer_color || '#888888';
+    document.getElementById('siteFooterOpacity').value = config.site_footer_opacity !== undefined ? config.site_footer_opacity : 1;
+    document.getElementById('siteFooterOpacityValue').textContent = config.site_footer_opacity !== undefined ? Number(config.site_footer_opacity).toFixed(2) : '1.00';
+    document.getElementById('siteFooterEffect').value = config.site_footer_effect || 'none';
 
     // 强调色
     const accent = config.accent_color || '#667eea';
@@ -678,6 +1050,61 @@ function onBgTypeChange(type) {
     document.querySelectorAll('.radio-card').forEach(el => {
         el.classList.toggle('active', el.getAttribute('data-value') === type);
     });
+}
+
+// ===== Logo 类型切换 =====
+function onLogoTypeChange(type) {
+    document.getElementById('logoImageGroup').style.display = type === 'image' ? 'block' : 'none';
+    document.getElementById('logoTextGroup').style.display = type === 'text' ? 'block' : 'none';
+    document.getElementById('logoFitGroup').style.display = type === 'image' ? 'block' : 'none';
+    document.querySelectorAll('.radio-card').forEach(el => {
+        const v = el.getAttribute('data-value');
+        if (v === 'image' || v === 'text') {
+            el.classList.toggle('active', v === type);
+        }
+    });
+}
+
+function onLogoLayoutChange(type) {
+    document.querySelectorAll('.radio-card').forEach(el => {
+        const v = el.getAttribute('data-value');
+        if (v === 'horizontal' || v === 'vertical') {
+            el.classList.toggle('active', v === type);
+        }
+    });
+}
+
+function onLogoFitChange(type) {
+    document.querySelectorAll('.radio-card').forEach(el => {
+        const v = el.getAttribute('data-value');
+        if (v === 'contain' || v === 'cover') {
+            el.classList.toggle('active', v === type);
+        }
+    });
+}
+
+// ===== 样式面板折叠 =====
+function toggleStylePanel(panelId, toggleEl) {
+    const panel = document.getElementById(panelId);
+    if (!panel) return;
+    const isOpen = panel.classList.toggle('open');
+    toggleEl.classList.toggle('open', isOpen);
+    toggleEl.textContent = isOpen ? toggleEl.textContent.replace('▾', '▴') : toggleEl.textContent.replace('▴', '▾');
+}
+
+// ===== 刷新分类排序 =====
+function reorderCategories() {
+    // 按 catOrder 排序所有分类
+    data.categories.sort((a, b) => (a.catOrder ?? 999) - (b.catOrder ?? 999));
+    // 重新分配 catOrder = 1,2,3...
+    data.categories.forEach((c, ci) => { c.catOrder = ci + 1; });
+    // 对每个分类下的站点按 order 排序，重新分配 order = 1,2,3...
+    data.categories.forEach(c => {
+        c.sites.sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
+        c.sites.forEach((s, si) => { s.order = si + 1; });
+    });
+    renderCategories();
+    toast('✅ 分类排序已刷新', 'success');
 }
 
 // ===== 颜色/渐变预设点击 =====
@@ -718,6 +1145,46 @@ document.addEventListener('input', function(e) {
         const text = document.getElementById('accentColorText');
         if (e.target.id === 'accentColor') text.value = e.target.value;
         else if (/^#[0-9a-f]{6}$/i.test(e.target.value)) color.value = e.target.value;
+    }
+    // Logo 文字颜色同步
+    if (e.target.id === 'logoTextColor' || e.target.id === 'logoTextColorText') {
+        const color = document.getElementById('logoTextColor');
+        const text = document.getElementById('logoTextColorText');
+        if (e.target.id === 'logoTextColor') text.value = e.target.value;
+        else if (/^#[0-9a-f]{6}$/i.test(e.target.value)) color.value = e.target.value;
+    }
+    if (e.target.id === 'logoTextOpacity') {
+        document.getElementById('logoTextOpacityValue').textContent = Number(e.target.value).toFixed(2);
+    }
+    // 标题颜色同步
+    if (e.target.id === 'siteTitleColor' || e.target.id === 'siteTitleColorText') {
+        const color = document.getElementById('siteTitleColor');
+        const text = document.getElementById('siteTitleColorText');
+        if (e.target.id === 'siteTitleColor') text.value = e.target.value;
+        else if (/^#[0-9a-f]{6}$/i.test(e.target.value)) color.value = e.target.value;
+    }
+    if (e.target.id === 'siteTitleOpacity') {
+        document.getElementById('siteTitleOpacityValue').textContent = Number(e.target.value).toFixed(2);
+    }
+    // 副标题颜色同步
+    if (e.target.id === 'siteSubtitleColor' || e.target.id === 'siteSubtitleColorText') {
+        const color = document.getElementById('siteSubtitleColor');
+        const text = document.getElementById('siteSubtitleColorText');
+        if (e.target.id === 'siteSubtitleColor') text.value = e.target.value;
+        else if (/^#[0-9a-f]{6}$/i.test(e.target.value)) color.value = e.target.value;
+    }
+    if (e.target.id === 'siteSubtitleOpacity') {
+        document.getElementById('siteSubtitleOpacityValue').textContent = Number(e.target.value).toFixed(2);
+    }
+    // 底部文字颜色同步
+    if (e.target.id === 'siteFooterColor' || e.target.id === 'siteFooterColorText') {
+        const color = document.getElementById('siteFooterColor');
+        const text = document.getElementById('siteFooterColorText');
+        if (e.target.id === 'siteFooterColor') text.value = e.target.value;
+        else if (/^#[0-9a-f]{6}$/i.test(e.target.value)) color.value = e.target.value;
+    }
+    if (e.target.id === 'siteFooterOpacity') {
+        document.getElementById('siteFooterOpacityValue').textContent = Number(e.target.value).toFixed(2);
     }
     if (e.target.id === 'cardOpacity') {
         document.getElementById('cardOpacityValue').textContent = e.target.value;
@@ -1171,21 +1638,35 @@ async function saveData() {
     data.site.subtitle = document.getElementById('siteSubtitle').value.trim() || '上网从这里开始';
     data.site.footer = document.getElementById('siteFooter').value.trim() || '🏠 东白湖之家 · 上网从这里开始';
 
-    // 按 catOrder 重新排序分类（序号小的在前面）
-    data.categories.sort((a, b) => (a.catOrder ?? 999) - (b.catOrder ?? 999));
-    // 自动整理序号：1,2,3... 消除跳跃（如 1,2,10 → 1,2,3）
-    data.categories.forEach((c, ci) => { c.catOrder = ci + 1; });
-    // 同时整理每个分类下站点的序号
-    data.categories.forEach(c => {
-        c.sites.sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
-        c.sites.forEach((s, si) => { s.order = si + 1; });
-    });
-
     // 收集外观配置
     const newConfig = {
         site_title: document.getElementById('siteTitle').value.trim() || '东白湖之家',
         site_subtitle: document.getElementById('siteSubtitle').value.trim() || '上网从这里开始',
         site_logo: document.getElementById('siteLogo').value.trim(),
+        logo_type: document.querySelector('input[name="logoType"]:checked')?.value || 'image',
+        logo_layout: document.querySelector('input[name="logoLayout"]:checked')?.value || 'horizontal',
+        logo_text: document.getElementById('logoText').value.trim(),
+        logo_text_font: document.getElementById('logoTextFont').value,
+        logo_text_size: parseInt(document.getElementById('logoTextSize').value) || 48,
+        logo_text_color: document.getElementById('logoTextColorText').value.trim() || '#ffffff',
+        logo_text_opacity: parseFloat(document.getElementById('logoTextOpacity').value) || 1,
+        logo_text_effect: document.getElementById('logoTextEffect').value,
+        logo_fit: document.querySelector('input[name="logoFit"]:checked')?.value || 'contain',
+        site_title_font: document.getElementById('siteTitleFont').value,
+        site_title_size: parseInt(document.getElementById('siteTitleSize').value) || 36,
+        site_title_color: document.getElementById('siteTitleColorText').value.trim() || '#ffffff',
+        site_title_opacity: parseFloat(document.getElementById('siteTitleOpacity').value) || 1,
+        site_title_effect: document.getElementById('siteTitleEffect').value,
+        site_subtitle_font: document.getElementById('siteSubtitleFont').value,
+        site_subtitle_size: parseInt(document.getElementById('siteSubtitleSize').value) || 18,
+        site_subtitle_color: document.getElementById('siteSubtitleColorText').value.trim() || '#aaaaaa',
+        site_subtitle_opacity: parseFloat(document.getElementById('siteSubtitleOpacity').value) || 1,
+        site_subtitle_effect: document.getElementById('siteSubtitleEffect').value,
+        site_footer_font: document.getElementById('siteFooterFont').value,
+        site_footer_size: parseInt(document.getElementById('siteFooterSize').value) || 14,
+        site_footer_color: document.getElementById('siteFooterColorText').value.trim() || '#888888',
+        site_footer_opacity: parseFloat(document.getElementById('siteFooterOpacity').value) || 1,
+        site_footer_effect: document.getElementById('siteFooterEffect').value,
         site_background: document.getElementById('bgImage').value.trim(),
         site_background_mobile: document.getElementById('bgImageMobile').value.trim(),
         site_footer: document.getElementById('siteFooter').value.trim() || '🏠 东白湖之家 · 上网从这里开始',

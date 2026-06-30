@@ -41,7 +41,7 @@
         .search-box { display: inline-flex; max-width: 600px; width: 100%; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); border-radius: 50px; overflow: hidden; backdrop-filter: blur(10px); transition: all 0.3s; }
         .search-box:focus-within { border-color: #667eea; box-shadow: 0 0 20px rgba(102,126,234,0.3); background: rgba(255,255,255,0.12); }
         .search-box select { background: transparent; border: none; color: #aaa; padding: 0 10px 0 18px; font-size: 14px; outline: none; cursor: pointer; min-width: 85px; }
-        .search-box select option { background: #1a1a2e; color: #e0e0e0; }
+        .search-box select option { color: #e0e0e0; }
         .search-box input { flex: 1; background: transparent; border: none; padding: 14px 12px; font-size: 16px; color: #fff; outline: none; }
         .search-box input::placeholder { color: #666; }
         .search-box button { background: linear-gradient(135deg, #667eea, #764ba2); border: none; color: #fff; padding: 0 28px; font-size: 16px; cursor: pointer; transition: opacity 0.2s; }
@@ -395,6 +395,23 @@ function applyConfig() {
         // gradient (default)
         body.style.background = config.bg_gradient || 'linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)';
     }
+
+    // 同步搜索引擎下拉列表 option 背景色（与网页背景一致）
+    let optionBg = '#0f0c29';
+    if (config.bg_type === 'color') {
+        optionBg = config.bg_color || optionBg;
+    } else if (config.bg_type === 'gradient' && config.bg_gradient) {
+        const colors = config.bg_gradient.match(/#[a-fA-F0-9]{6}|#[a-fA-F0-9]{3}/g);
+        if (colors && colors.length > 0) optionBg = colors[0];
+    } else if (config.bg_type === 'image') {
+        optionBg = config.bg_color || optionBg;
+    }
+    const style = document.createElement('style');
+    style.id = 'searchOptionStyle';
+    const oldStyle = document.getElementById('searchOptionStyle');
+    if (oldStyle) oldStyle.remove();
+    style.textContent = `.search-box select option { background: ${optionBg}; color: #e0e0e0; }`;
+    document.head.appendChild(style);
 
     // 强调色
     const accent = config.accent_color || '#667eea';

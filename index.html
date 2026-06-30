@@ -396,22 +396,27 @@ function applyConfig() {
         body.style.background = config.bg_gradient || 'linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)';
     }
 
-    // 同步搜索引擎下拉列表 option 背景色（与网页背景一致）
+    // 同步搜索引擎下拉列表背景色 — 注入样式覆盖 option 背景
     let optionBg = '#0f0c29';
     if (config.bg_type === 'color') {
         optionBg = config.bg_color || optionBg;
     } else if (config.bg_type === 'gradient' && config.bg_gradient) {
         const colors = config.bg_gradient.match(/#[a-fA-F0-9]{6}|#[a-fA-F0-9]{3}/g);
-        if (colors && colors.length > 0) optionBg = colors[0];
+        optionBg = (colors && colors.length > 1) ? colors[1] : (colors ? colors[0] : optionBg);
     } else if (config.bg_type === 'image') {
         optionBg = config.bg_color || optionBg;
     }
-    const style = document.createElement('style');
-    style.id = 'searchOptionStyle';
-    const oldStyle = document.getElementById('searchOptionStyle');
-    if (oldStyle) oldStyle.remove();
-    style.textContent = `.search-box select option { background: ${optionBg}; color: #e0e0e0; }`;
-    document.head.appendChild(style);
+    // 用 style 标签确保最高优先级覆盖
+    let optStyle = document.getElementById('searchOptionStyle');
+    if (!optStyle) {
+        optStyle = document.createElement('style');
+        optStyle.id = 'searchOptionStyle';
+        document.head.appendChild(optStyle);
+    }
+    optStyle.textContent = `#searchEngine { background: ${optionBg} !important; } .search-box select option { background: ${optionBg} !important; color: #e0e0e0 !important; }`;
+    // 同步设置内联样式（后备方案）
+    const sel = document.getElementById('searchEngine');
+    if (sel) sel.style.background = optionBg;
 
     // 强调色
     const accent = config.accent_color || '#667eea';

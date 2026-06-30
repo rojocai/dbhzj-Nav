@@ -37,7 +37,7 @@
   "site_icp": "",
   "site_custom_css": "",
   "site_custom_js": "",
-  "bg_type": "gradient",
+  "bg_type": "color",
   "bg_color": "#0f0c29",
   "bg_gradient": "linear-gradient(135deg, #1a0a0a 0%, #3d1a1a 50%, #1a0a0a 100%)",
   "card_opacity": 0.03,

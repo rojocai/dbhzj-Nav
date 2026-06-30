@@ -83,15 +83,15 @@
           "order": 1
         },
         {
-          "name": "DMIT",
-          "url": "https://www.dmit.io/aff.php?aff=13662",
-          "icon": "/uploads/1782801757642.webp",
-          "order": 2
-        },
-        {
           "name": "Gomami",
           "url": "https://gomami.io/aff.php?aff=218",
           "icon": "https://gomami.io/favicon.ico",
+          "order": 2
+        },
+        {
+          "name": "DMIT",
+          "url": "https://www.dmit.io/aff.php?aff=13662",
+          "icon": "/uploads/1782801757642.webp",
           "order": 3
         }
       ],

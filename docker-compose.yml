@@ -1,0 +1,16 @@
+services:
+  nav-site:
+    build: .
+    container_name: dbhzj-nav
+    restart: unless-stopped
+    ports:
+      - "5001:5001"
+    volumes:
+      # 持久化存储（可选，不挂载则使用镜像内默认数据）
+      - ./data.json:/app/data.json
+      - ./config.json:/app/config.json
+      - ./users.json:/app/users.json
+      - ./uploads:/app/uploads
+      # 如需持久化修改 site-list.html/admin.html，也可挂载
+      # - ./index.html:/app/index.html
+      # - ./admin.html:/app/admin.html

@@ -68,6 +68,10 @@
             outline: none;
             transition: border-color 0.2s;
         }
+        .form-group select option {
+            background: #1e1b3a;
+            color: #e0e0e0;
+        }
         .form-group input:focus, .form-group textarea:focus { border-color: #667eea; }
         .form-group textarea { min-height: 60px; resize: vertical; }
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -156,16 +160,46 @@
         .category-card .cat-header .del-cat-btn:hover { background: rgba(239,68,68,0.3); }
 
         /* 分类拖拽排序 */
-        .category-card { cursor: default; }
-        .category-card .drag-handle {
-            cursor: grab; color: #555; font-size: 16px; padding: 4px 6px;
+        .category-card.dragging-cat { opacity: 0.35; border-color: #667eea; }
+        .category-card.drag-over-cat { border-color: #22c55e; border-style: dashed; background: rgba(34,197,94,0.08); }
+
+        /* 鼠标吸附拖拽通用样式 */
+        .dragging-item { opacity: 0.3; border-color: #667eea; }
+        .drag-before { border-top: 3px solid #22c55e !important; }
+        .drag-after { border-bottom: 3px solid #22c55e !important; }
+        .drag-before, .drag-after { position: relative; }
+        .drag-before::before {
+            content: ''; position: absolute; top: -2px; left: 0; right: 0;
+            height: 3px; background: #22c55e; border-radius: 2px;
+            box-shadow: 0 0 8px rgba(34,197,94,0.5);
+            z-index: 10;
+        }
+        .drag-after::after {
+            content: ''; position: absolute; bottom: -2px; left: 0; right: 0;
+            height: 3px; background: #22c55e; border-radius: 2px;
+            box-shadow: 0 0 8px rgba(34,197,94,0.5);
+            z-index: 10;
+        }
+        .site-item, .engine-item, .ql-item, .category-card { cursor: pointer; user-select: none; }
+        .drag-handle { cursor: grab; color: #555; font-size: 16px; padding: 4px 6px;
             user-select: none; border-radius: 4px; transition: color 0.2s;
             flex-shrink: 0;
         }
-        .category-card .drag-handle:active { cursor: grabbing; }
-        .category-card .drag-handle:hover { color: #667eea; }
-        .category-card.dragging-cat { opacity: 0.35; border-color: #667eea; }
-        .category-card.drag-over-cat { border-color: #22c55e; border-style: dashed; background: rgba(34,197,94,0.08); }
+        .drag-handle:active { cursor: grabbing; }
+        .drag-handle:hover { color: #667eea; }
+
+        /* 搜索引擎和快捷链接拖拽（旧样式保留兼容） */
+        .engine-item, .ql-item { cursor: pointer; }
+        .engine-item.dragging-item, .ql-item.dragging-item { opacity: 0.35; border-color: #667eea; }
+        .engine-item.drag-over-item, .ql-item.drag-over-item { border-color: #22c55e; border-style: dashed; background: rgba(34,197,94,0.08); }
+        .site-item .order-badge {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 22px; height: 22px; border-radius: 50%;
+            background: rgba(102,126,234,0.2); color: #667eea;
+            font-size: 11px; font-weight: 600; flex-shrink: 0;
+        }
+        .site-item .item-icon { width: 20px; height: 20px; border-radius: 4px; object-fit: cover; flex-shrink: 0; }
+        .form-hint { font-size: 12px; color: #666; margin-top: 3px; }
 
         /* Emoji 选择面板 */
         .emoji-picker {
@@ -315,7 +349,7 @@
             display: none;
             margin-top: 10px;
             padding: 14px;
-            background: rgba(255,255,255,0.03);
+            background: rgba(42,42,58,0.9);
             border: 1px solid rgba(255,255,255,0.06);
             border-radius: 10px;
         }
@@ -335,6 +369,17 @@
         .opacity-display {
             font-size: 13px; color: #888; min-width: 36px;
         }
+
+        @keyframes fadeEffect { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+        @keyframes shake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-8px);} 75%{transform:translateX(8px);} }
+        @keyframes bounce { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-20px);} }
+        @keyframes heartbeat { 0%,100%{transform:scale(1);} 50%{transform:scale(1.15);} }
+        @keyframes rotate3d { 0%{transform:rotateY(0deg);} 50%{transform:rotateY(180deg);} 100%{transform:rotateY(360deg);} }
+        @keyframes glow { 0%,100%{box-shadow:0 0 5px #667eea;} 50%{box-shadow:0 0 30px #667eea,0 0 60px #667eea;} }
+        @keyframes inkblot { 0%,100%{filter:blur(0px);opacity:1;} 50%{filter:blur(3px);opacity:0.6;} }
+        @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0;} }
+        @keyframes pulse { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:0.7;transform:scale(1.05);} }
+        @keyframes typing { from { width: 0; } to { width: 100%; } }
 
         @media (max-width: 768px) {
             .form-row { grid-template-columns: 1fr; }
@@ -382,22 +427,57 @@
             <div class="form-group">
                 <label>网站标题</label>
                 <input id="siteTitle" placeholder="东白湖之家">
-                <div style="margin-top:6px;">
+                <div style="margin-top:8px;">
+                    <label style="font-size:13px;color:#999;margin-bottom:6px;display:block;">标题展示方式</label>
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px;">
+                        <label class="radio-card" data-value="logo_text" onclick="onTitleModeChange('logo_text')">
+                            <input type="radio" name="titleMode" value="logo_text">
+                            <span>✏️ 文字模式</span>
+                        </label>
+                        <label class="radio-card" data-value="logo_image" onclick="onTitleModeChange('logo_image')">
+                            <input type="radio" name="titleMode" value="logo_image">
+                            <span>🖼️ 图片模式</span>
+                        </label>
+                    </div>
+                </div>
+                <!-- 文字模式区域 -->
+                <div id="titleTextModeArea">
                     <div class="style-toggle" onclick="toggleStylePanel('titleStylePanel', this)">
-                        🎨 标题样式设置 ▾
+                        🎨 文字样式设置 ▾
                     </div>
                     <div class="style-panel" id="titleStylePanel">
                         <div class="form-row" style="margin-bottom:12px;">
                             <div class="form-group">
                                 <label>字体</label>
-                                <select id="siteTitleFont">
+                                <select id="siteTitleFont" onchange="updateFontPreview('siteTitle')">
                                     <option value="">默认字体</option>
-                                    <option value="PingFang SC">PingFang SC</option>
-                                    <option value="Microsoft YaHei">Microsoft YaHei</option>
-                                    <option value="Noto Serif SC">Noto Serif SC</option>
-                                    <option value="ZCOOL XiaoWei">ZCOOL XiaoWei</option>
-                                    <option value="Ma Shan Zheng">Ma Shan Zheng</option>
+                                    <!-- 中文字体 -->
+                                    <option value="PingFang SC">PingFang SC（苹方）</option>
+                                    <option value="Microsoft YaHei">Microsoft YaHei（微软雅黑）</option>
+                                    <option value="Noto Sans SC">Noto Sans SC（思源黑体）</option>
+                                    <option value="Noto Serif SC">Noto Serif SC（思源宋体）</option>
+                                    <option value="ZCOOL XiaoWei">ZCOOL XiaoWei（站酷小魏）</option>
+                                    <option value="Ma Shan Zheng">Ma Shan Zheng（马善政楷书）</option>
+                                    <option value="Liu Jian Mao Cao">Liu Jian Mao Cao（柳建毛草）</option>
+                                    <option value="ZCOOL QingKe HuangYou">ZCOOL QingKe HuangYou（站酷晴空）</option>
+                                    <option value="Long Cang">Long Cang（龙藏体）</option>
+                                    <option value="ZCOOL KuaiLe">ZCOOL KuaiLe（站酷快乐）</option>
+                                    <option value="LXGW WenKai">LXGW WenKai（霞鹜文楷）</option>
+                                    <!-- 国际字体 -->
+                                    <option value="Georgia">Georgia</option>
+                                    <option value="Times New Roman">Times New Roman</option>
+                                    <option value="Arial">Arial</option>
+                                    <option value="Helvetica">Helvetica</option>
+                                    <option value="Verdana">Verdana</option>
+                                    <option value="Trebuchet MS">Trebuchet MS</option>
+                                    <option value="Courier New">Courier New</option>
+                                    <option value="Impact">Impact</option>
+                                    <option value="Comic Sans MS">Comic Sans MS</option>
+                                    <option value="Palatino Linotype">Palatino Linotype</option>
                                 </select>
+                                <div id="siteTitleFontPreview" style="margin-top:6px;padding:8px 12px;background:#2a2a3a;border:1px solid rgba(255,255,255,0.08);border-radius:6px;font-size:18px;min-height:36px;display:flex;align-items:center;color:#ccc;">
+                                    <span style="opacity:0.5;">Aa 字体预览</span>
+                                </div>
                             </div>
                             <div class="form-group">
                                 <label>字号 (px)</label>
@@ -422,14 +502,110 @@
                         </div>
                         <div class="form-group">
                             <label>特效</label>
-                            <select id="siteTitleEffect">
+                            <select id="siteTitleEffect" onchange="updateEffectPreview('siteTitle', this.value)">
                                 <option value="none">无</option>
-                                <option value="marquee">滚动（marquee）</option>
-                                <option value="typing">打字机效果</option>
-                                <option value="fade">淡入淡出</option>
+                                <option value="marquee">滚动</option>
+                                <option value="typing">打字机</option>
+                                <option value="fade">淡入</option>
                                 <option value="blink">闪烁</option>
-                                <option value="neon">霓虹光效</option>
+                                <option value="neon">霓虹</option>
+                                <option value="pulse">脉冲</option>
+                                <option value="shake">摇摆</option>
+                                <option value="bounce">弹跳</option>
+                                <option value="heartbeat">心跳</option>
+                                <option value="rotate3d">翻转</option>
+                                <option value="glow">光晕</option>
+                                <option value="inkblot">墨迹</option>
                             </select>
+                            <div id="siteTitleEffectPreview" style="margin-top:8px;padding:12px;background:#2a2a3a;border:1px solid rgba(255,255,255,0.08);border-radius:8px;text-align:center;min-height:44px;display:flex;align-items:center;justify-content:center;font-size:16px;color:#888;">
+                                🎬 选择特效查看预览
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 图片模式区域 -->
+                <div id="titleImageModeArea" style="display:none;margin-top:8px;">
+                    <div style="background:rgba(42,42,58,0.9);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:14px;">
+                        <div class="form-group">
+                            <label>Logo图片 URL</label>
+                            <div style="display:flex;gap:8px;">
+                                <input id="siteLogo" placeholder="https://example.com/logo.png" style="flex:1;">
+                                <button type="button" class="btn-ghost" onclick="uploadToField('siteLogo')" style="padding:8px 12px;font-size:12px;white-space:nowrap;">📤 上传</button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>宽度（%）</label>
+                            <div style="display:flex;gap:12px;align-items:center;">
+                                <input id="logoWidthSlider" type="range" min="10" max="100" value="50" style="flex:1;" oninput="onLogoWidthChange(this.value)">
+                                <input id="logoWidthInput" type="number" min="10" max="100" value="50" style="width:60px;" onchange="onLogoWidthChange(this.value)">
+                                <span style="font-size:13px;color:#888;">%</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>高度（%）</label>
+                            <div style="display:flex;gap:12px;align-items:center;">
+                                <input id="logoHeightSlider" type="range" min="10" max="100" value="50" style="flex:1;" oninput="onLogoHeightChange(this.value)">
+                                <input id="logoHeightInput" type="number" min="10" max="100" value="50" style="width:60px;" onchange="onLogoHeightChange(this.value)">
+                                <span style="font-size:13px;color:#888;">%</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label style="display:flex;align-items:center;gap:8px;">
+                                <input id="logoAspectLock" type="checkbox" checked onchange="onLogoScaleMode(this.checked)" style="width:18px;height:18px;accent-color:#667eea;">
+                                <span>🔗 等比例缩放（勾选后拖动宽度，高度同步变化）</span>
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label>布局方向</label>
+                            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                                <label class="radio-card" data-value="horizontal" onclick="onLogoLayoutChange('horizontal')">
+                                    <input type="radio" name="logoLayout" value="horizontal">
+                                    <span>横向（左右）</span>
+                                </label>
+                                <label class="radio-card" data-value="vertical" onclick="onLogoLayoutChange('vertical')">
+                                    <input type="radio" name="logoLayout" value="vertical">
+                                    <span>纵向（上下）</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>旋转角度</label>
+                            <div style="display:flex;gap:12px;align-items:center;">
+                                <input id="logoRotateSlider" type="range" min="0" max="360" value="0" style="flex:1;" oninput="onLogoRotateChange(this.value)">
+                                <input id="logoRotateInput" type="number" min="0" max="360" value="0" style="width:60px;" onchange="onLogoRotateChange(this.value)">
+                                <span style="font-size:13px;color:#888;">°</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>透明度</label>
+                            <div style="display:flex;gap:12px;align-items:center;">
+                                <input id="logoOpacity" type="range" min="0" max="1" step="0.05" value="1" style="flex:1;" oninput="document.getElementById('logoOpacityValue').textContent=Number(this.value).toFixed(2)">
+                                <span class="opacity-display" id="logoOpacityValue">1.00</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>特效</label>
+                            <select id="logoImageEffect" onchange="updateEffectPreview('logoImage', this.value)">
+                                <option value="none">无</option>
+                                <option value="marquee">滚动</option>
+                                <option value="typing">打字机</option>
+                                <option value="fade">淡入</option>
+                                <option value="blink">闪烁</option>
+                                <option value="neon">霓虹</option>
+                                <option value="pulse">脉冲</option>
+                                <option value="shake">摇摆</option>
+                                <option value="bounce">弹跳</option>
+                                <option value="heartbeat">心跳</option>
+                                <option value="rotate3d">翻转</option>
+                                <option value="glow">光晕</option>
+                                <option value="inkblot">墨迹</option>
+                            </select>
+                            <div id="logoImageEffectPreview" style="margin-top:8px;padding:12px;background:#2a2a3a;border:1px solid rgba(255,255,255,0.08);border-radius:8px;text-align:center;min-height:44px;display:flex;align-items:center;justify-content:center;font-size:16px;color:#888;">
+                                🎬 选择特效查看预览
+                            </div>
+                        </div>
+                        <div style="font-size:12px;color:#888;margin-top:8px;">
+                            当前尺寸：<span id="logoCurrentSize">50% × 50%</span>
                         </div>
                     </div>
                 </div>
@@ -445,14 +621,35 @@
                         <div class="form-row" style="margin-bottom:12px;">
                             <div class="form-group">
                                 <label>字体</label>
-                                <select id="siteSubtitleFont">
+                                <select id="siteSubtitleFont" onchange="updateFontPreview('siteSubtitle')">
                                     <option value="">默认字体</option>
-                                    <option value="PingFang SC">PingFang SC</option>
-                                    <option value="Microsoft YaHei">Microsoft YaHei</option>
-                                    <option value="Noto Serif SC">Noto Serif SC</option>
-                                    <option value="ZCOOL XiaoWei">ZCOOL XiaoWei</option>
-                                    <option value="Ma Shan Zheng">Ma Shan Zheng</option>
+                                    <!-- 中文字体 -->
+                                    <option value="PingFang SC">PingFang SC（苹方）</option>
+                                    <option value="Microsoft YaHei">Microsoft YaHei（微软雅黑）</option>
+                                    <option value="Noto Sans SC">Noto Sans SC（思源黑体）</option>
+                                    <option value="Noto Serif SC">Noto Serif SC（思源宋体）</option>
+                                    <option value="ZCOOL XiaoWei">ZCOOL XiaoWei（站酷小魏）</option>
+                                    <option value="Ma Shan Zheng">Ma Shan Zheng（马善政楷书）</option>
+                                    <option value="Liu Jian Mao Cao">Liu Jian Mao Cao（柳建毛草）</option>
+                                    <option value="ZCOOL QingKe HuangYou">ZCOOL QingKe HuangYou（站酷晴空）</option>
+                                    <option value="Long Cang">Long Cang（龙藏体）</option>
+                                    <option value="ZCOOL KuaiLe">ZCOOL KuaiLe（站酷快乐）</option>
+                                    <option value="LXGW WenKai">LXGW WenKai（霞鹜文楷）</option>
+                                    <!-- 国际字体 -->
+                                    <option value="Georgia">Georgia</option>
+                                    <option value="Times New Roman">Times New Roman</option>
+                                    <option value="Arial">Arial</option>
+                                    <option value="Helvetica">Helvetica</option>
+                                    <option value="Verdana">Verdana</option>
+                                    <option value="Trebuchet MS">Trebuchet MS</option>
+                                    <option value="Courier New">Courier New</option>
+                                    <option value="Impact">Impact</option>
+                                    <option value="Comic Sans MS">Comic Sans MS</option>
+                                    <option value="Palatino Linotype">Palatino Linotype</option>
                                 </select>
+                                <div id="siteSubtitleFontPreview" style="margin-top:6px;padding:8px 12px;background:#2a2a3a;border:1px solid rgba(255,255,255,0.08);border-radius:6px;font-size:18px;min-height:36px;display:flex;align-items:center;color:#ccc;">
+                                    <span style="opacity:0.5;">Aa 字体预览</span>
+                                </div>
                             </div>
                             <div class="form-group">
                                 <label>字号 (px)</label>
@@ -477,14 +674,24 @@
                         </div>
                         <div class="form-group">
                             <label>特效</label>
-                            <select id="siteSubtitleEffect">
+                            <select id="siteSubtitleEffect" onchange="updateEffectPreview('siteSubtitle', this.value)">
                                 <option value="none">无</option>
-                                <option value="marquee">滚动（marquee）</option>
-                                <option value="typing">打字机效果</option>
-                                <option value="fade">淡入淡出</option>
+                                <option value="marquee">滚动</option>
+                                <option value="typing">打字机</option>
+                                <option value="fade">淡入</option>
                                 <option value="blink">闪烁</option>
-                                <option value="neon">霓虹光效</option>
+                                <option value="neon">霓虹</option>
+                                <option value="pulse">脉冲</option>
+                                <option value="shake">摇摆</option>
+                                <option value="bounce">弹跳</option>
+                                <option value="heartbeat">心跳</option>
+                                <option value="rotate3d">翻转</option>
+                                <option value="glow">光晕</option>
+                                <option value="inkblot">墨迹</option>
                             </select>
+                            <div id="siteSubtitleEffectPreview" style="margin-top:8px;padding:12px;background:#2a2a3a;border:1px solid rgba(255,255,255,0.08);border-radius:8px;text-align:center;min-height:44px;display:flex;align-items:center;justify-content:center;font-size:16px;color:#888;">
+                                🎬 选择特效查看预览
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -501,14 +708,35 @@
                     <div class="form-row" style="margin-bottom:12px;">
                         <div class="form-group">
                             <label>字体</label>
-                            <select id="siteFooterFont">
+                            <select id="siteFooterFont" onchange="updateFontPreview('siteFooter')">
                                 <option value="">默认字体</option>
-                                <option value="PingFang SC">PingFang SC</option>
-                                <option value="Microsoft YaHei">Microsoft YaHei</option>
-                                <option value="Noto Serif SC">Noto Serif SC</option>
-                                <option value="ZCOOL XiaoWei">ZCOOL XiaoWei</option>
-                                <option value="Ma Shan Zheng">Ma Shan Zheng</option>
+                                <!-- 中文字体 -->
+                                <option value="PingFang SC">PingFang SC（苹方）</option>
+                                <option value="Microsoft YaHei">Microsoft YaHei（微软雅黑）</option>
+                                <option value="Noto Sans SC">Noto Sans SC（思源黑体）</option>
+                                <option value="Noto Serif SC">Noto Serif SC（思源宋体）</option>
+                                <option value="ZCOOL XiaoWei">ZCOOL XiaoWei（站酷小魏）</option>
+                                <option value="Ma Shan Zheng">Ma Shan Zheng（马善政楷书）</option>
+                                <option value="Liu Jian Mao Cao">Liu Jian Mao Cao（柳建毛草）</option>
+                                <option value="ZCOOL QingKe HuangYou">ZCOOL QingKe HuangYou（站酷晴空）</option>
+                                <option value="Long Cang">Long Cang（龙藏体）</option>
+                                <option value="ZCOOL KuaiLe">ZCOOL KuaiLe（站酷快乐）</option>
+                                <option value="LXGW WenKai">LXGW WenKai（霞鹜文楷）</option>
+                                <!-- 国际字体 -->
+                                <option value="Georgia">Georgia</option>
+                                <option value="Times New Roman">Times New Roman</option>
+                                <option value="Arial">Arial</option>
+                                <option value="Helvetica">Helvetica</option>
+                                <option value="Verdana">Verdana</option>
+                                <option value="Trebuchet MS">Trebuchet MS</option>
+                                <option value="Courier New">Courier New</option>
+                                <option value="Impact">Impact</option>
+                                <option value="Comic Sans MS">Comic Sans MS</option>
+                                <option value="Palatino Linotype">Palatino Linotype</option>
                             </select>
+                            <div id="siteFooterFontPreview" style="margin-top:6px;padding:8px 12px;background:#2a2a3a;border:1px solid rgba(255,255,255,0.08);border-radius:6px;font-size:18px;min-height:36px;display:flex;align-items:center;color:#ccc;">
+                                <span style="opacity:0.5;">Aa 字体预览</span>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label>字号 (px)</label>
@@ -533,19 +761,41 @@
                     </div>
                     <div class="form-group">
                         <label>特效</label>
-                        <select id="siteFooterEffect">
+                        <select id="siteFooterEffect" onchange="updateEffectPreview('siteFooter', this.value)">
                             <option value="none">无</option>
-                            <option value="marquee">滚动（marquee）</option>
-                            <option value="typing">打字机效果</option>
-                            <option value="fade">淡入淡出</option>
+                            <option value="marquee">滚动</option>
+                            <option value="typing">打字机</option>
+                            <option value="fade">淡入</option>
                             <option value="blink">闪烁</option>
-                            <option value="neon">霓虹光效</option>
+                            <option value="neon">霓虹</option>
+                            <option value="pulse">脉冲</option>
+                            <option value="shake">摇摆</option>
+                            <option value="bounce">弹跳</option>
+                            <option value="heartbeat">心跳</option>
+                            <option value="rotate3d">翻转</option>
+                            <option value="glow">光晕</option>
+                            <option value="inkblot">墨迹</option>
                         </select>
+                        <div id="siteFooterEffectPreview" style="margin-top:8px;padding:12px;background:#2a2a3a;border:1px solid rgba(255,255,255,0.08);border-radius:8px;text-align:center;min-height:44px;display:flex;align-items:center;justify-content:center;font-size:16px;color:#888;">
+                            🎬 选择特效查看预览
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="form-group"><label>ICP备案号</label><input id="siteIcp" placeholder="沪ICP备XXXXXXXX号-1"></div>
+        <!-- 兼容旧数据的文字Logo字段（隐藏） -->
+        <div id="logoTextGroup" style="display:none !important;">
+            <input id="logoText" value="">
+            <select id="logoTextFont"><option value=""></option></select>
+            <input id="logoTextSize" value="48">
+            <input id="logoTextColor" type="color" value="#ffffff">
+            <input id="logoTextColorText" value="#ffffff">
+            <input id="logoTextOpacity" type="range" value="1">
+            <span id="logoTextOpacityValue">1.00</span>
+            <select id="logoTextEffect"><option value="none"></option></select>
+            <div id="logoTextEffectPreview"></div>
+        </div>
     </div>
 
     <!-- 外观设置 -->
@@ -610,115 +860,6 @@
                 <button type="button" class="color-preset" data-value="#1a0a2e" style="background:#1a0a2e" title="深紫"></button>
                 <button type="button" class="color-preset" data-value="#0a1628" style="background:#0a1628" title="夜空"></button>
                 <button type="button" class="color-preset" data-value="#1a1a1a" style="background:#1a1a1a" title="炭黑"></button>
-            </div>
-        </div>
-
-        <!-- Logo 设置面板 -->
-        <div class="form-group" style="margin-bottom:16px;">
-            <label>Logo 类型</label>
-            <div style="display:flex;gap:10px;flex-wrap:wrap;">
-                <label class="radio-card" data-value="image" onclick="onLogoTypeChange('image')">
-                    <input type="radio" name="logoType" value="image">
-                    <span>🖼️ 图片Logo</span>
-                </label>
-                <label class="radio-card" data-value="text" onclick="onLogoTypeChange('text')">
-                    <input type="radio" name="logoType" value="text">
-                    <span>✏️ 文字Logo</span>
-                </label>
-            </div>
-        </div>
-
-        <div id="logoImageGroup" class="form-group">
-            <label>图片Logo URL</label>
-            <div style="display:flex;gap:8px;">
-                <input id="siteLogo" placeholder="https://example.com/logo.png" style="flex:1;">
-                <button type="button" class="btn-ghost" onclick="uploadToField('siteLogo')" style="padding:8px 12px;font-size:12px;white-space:nowrap;">📤 上传</button>
-            </div>
-        </div>
-
-        <div id="logoTextGroup" class="form-group" style="display:none;">
-            <div class="form-group">
-                <label>文字Logo内容</label>
-                <input id="logoText" placeholder="东白湖之家">
-            </div>
-            <div style="margin-top:8px;">
-                <div class="style-toggle" onclick="toggleStylePanel('logoTextStylePanel', this)" style="margin-bottom:8px;">
-                    🎨 文字样式设置 ▾
-                </div>
-                <div class="style-panel" id="logoTextStylePanel">
-                    <div class="form-row" style="margin-bottom:12px;">
-                        <div class="form-group">
-                            <label>字体</label>
-                            <select id="logoTextFont">
-                                <option value="">默认字体</option>
-                                <option value="PingFang SC">PingFang SC</option>
-                                <option value="Microsoft YaHei">Microsoft YaHei</option>
-                                <option value="Noto Serif SC">Noto Serif SC</option>
-                                <option value="ZCOOL XiaoWei">ZCOOL XiaoWei</option>
-                                <option value="Ma Shan Zheng">Ma Shan Zheng</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>字号 (px)</label>
-                            <input id="logoTextSize" type="number" min="8" max="200" placeholder="48">
-                        </div>
-                    </div>
-                    <div class="form-row" style="margin-bottom:12px;">
-                        <div class="form-group">
-                            <label>颜色</label>
-                            <div class="icon-sync-group">
-                                <input id="logoTextColor" type="color" value="#ffffff">
-                                <input id="logoTextColorText" placeholder="#ffffff" style="flex:1;">
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label>透明度</label>
-                            <div style="display:flex;gap:12px;align-items:center;">
-                                <input id="logoTextOpacity" type="range" min="0" max="1" step="0.05" value="1" style="flex:1;">
-                                <span class="opacity-display" id="logoTextOpacityValue">1.00</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>特效</label>
-                        <select id="logoTextEffect">
-                            <option value="none">无</option>
-                            <option value="marquee">滚动（marquee）</option>
-                            <option value="typing">打字机效果</option>
-                            <option value="fade">淡入淡出</option>
-                            <option value="blink">闪烁</option>
-                            <option value="neon">霓虹光效</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label>Logo 布局方向</label>
-            <div style="display:flex;gap:10px;flex-wrap:wrap;">
-                <label class="radio-card" data-value="horizontal" onclick="onLogoLayoutChange('horizontal')">
-                    <input type="radio" name="logoLayout" value="horizontal">
-                    <span>横向（左右）</span>
-                </label>
-                <label class="radio-card" data-value="vertical" onclick="onLogoLayoutChange('vertical')">
-                    <input type="radio" name="logoLayout" value="vertical">
-                    <span>纵向（上下）</span>
-                </label>
-            </div>
-        </div>
-
-        <div id="logoFitGroup" class="form-group">
-            <label>图片缩放模式</label>
-            <div style="display:flex;gap:10px;flex-wrap:wrap;">
-                <label class="radio-card" data-value="contain" onclick="onLogoFitChange('contain')">
-                    <input type="radio" name="logoFit" value="contain">
-                    <span>按比例</span>
-                </label>
-                <label class="radio-card" data-value="cover" onclick="onLogoFitChange('cover')">
-                    <input type="radio" name="logoFit" value="cover">
-                    <span>拉伸填充</span>
-                </label>
             </div>
         </div>
 
@@ -918,6 +1059,8 @@ async function loadData() {
         config = await configRes.json();
         renderAll();
         renderConfig();
+        // 等待 DOM 渲染完成后初始化拖拽
+        setTimeout(initAllDrag, 50);
     } catch(e) {
         toast('加载数据失败: ' + e.message, 'error');
     }
@@ -960,40 +1103,55 @@ function renderConfig() {
     document.getElementById('bgColor').value = config.bg_color || '#0f0c29';
     document.getElementById('bgColorText').value = config.bg_color || '#0f0c29';
 
-    // Logo
-    document.getElementById('siteLogo').value = config.site_logo || '';
-    // Logo 类型
-    const logoType = config.logo_type || 'image';
-    document.querySelectorAll('input[name="logoType"]').forEach(r => {
-        r.checked = (r.value === logoType);
+    // 标题模式 (logo_text / logo_image)
+    const titleMode = config.logo_mode || 'logo_text';
+    document.querySelectorAll('input[name="titleMode"]').forEach(r => {
+        r.checked = (r.value === titleMode);
     });
-    document.querySelectorAll('.radio-card[data-value]').forEach(el => {
-        if (el.getAttribute('data-value') === 'image' || el.getAttribute('data-value') === 'text') {
-            el.classList.toggle('active', el.getAttribute('data-value') === logoType);
+    document.querySelectorAll('.radio-card').forEach(el => {
+        const v = el.getAttribute('data-value');
+        if (v === 'logo_text' || v === 'logo_image') {
+            el.classList.toggle('active', v === titleMode);
         }
     });
-    onLogoTypeChange(logoType);
+    onTitleModeChange(titleMode);
+
+    // Logo 图片
+    document.getElementById('siteLogo').value = config.site_logo || '';
+
+    // Logo 宽高百分比
+    const logoW = config.logo_width_pct || 50;
+    const logoH = config.logo_height_pct || 50;
+    document.getElementById('logoWidthSlider').value = logoW;
+    document.getElementById('logoWidthInput').value = logoW;
+    document.getElementById('logoHeightSlider').value = logoH;
+    document.getElementById('logoHeightInput').value = logoH;
+
+    // Logo 缩放模式（复选框：true=等比例）
+    const scaleMode = config.logo_scale_mode !== undefined ? config.logo_scale_mode : true;
+    document.getElementById('logoAspectLock').checked = scaleMode === true || scaleMode === 'aspect_keep';
+    onLogoScaleMode(document.getElementById('logoAspectLock').checked);
+
     // Logo 布局
     const logoLayout = config.logo_layout || 'horizontal';
     document.querySelectorAll('input[name="logoLayout"]').forEach(r => {
         r.checked = (r.value === logoLayout);
     });
-    document.querySelectorAll('.radio-card[data-value]').forEach(el => {
-        if (el.getAttribute('data-value') === 'horizontal' || el.getAttribute('data-value') === 'vertical') {
-            el.classList.toggle('active', el.getAttribute('data-value') === logoLayout);
+    document.querySelectorAll('.radio-card').forEach(el => {
+        const v = el.getAttribute('data-value');
+        if (v === 'horizontal' || v === 'vertical') {
+            el.classList.toggle('active', v === logoLayout);
         }
     });
-    // Logo 缩放模式
-    const logoFit = config.logo_fit || 'contain';
-    document.querySelectorAll('input[name="logoFit"]').forEach(r => {
-        r.checked = (r.value === logoFit);
-    });
-    document.querySelectorAll('.radio-card[data-value]').forEach(el => {
-        if (el.getAttribute('data-value') === 'contain' || el.getAttribute('data-value') === 'cover') {
-            el.classList.toggle('active', el.getAttribute('data-value') === logoFit);
-        }
-    });
-    // 文字 Logo 字段
+
+    updateLogoSizeDisplay();
+
+    // 旋转角度
+    const rotate = config.logo_rotate || 0;
+    document.getElementById('logoRotateSlider').value = rotate;
+    document.getElementById('logoRotateInput').value = rotate;
+
+    // 文字 Logo 字段（兼容旧数据）
     document.getElementById('logoText').value = config.logo_text || '';
     document.getElementById('logoTextFont').value = config.logo_text_font || '';
     document.getElementById('logoTextSize').value = config.logo_text_size || 48;
@@ -1002,30 +1160,40 @@ function renderConfig() {
     document.getElementById('logoTextOpacity').value = config.logo_text_opacity !== undefined ? config.logo_text_opacity : 1;
     document.getElementById('logoTextOpacityValue').textContent = config.logo_text_opacity !== undefined ? Number(config.logo_text_opacity).toFixed(2) : '1.00';
     document.getElementById('logoTextEffect').value = config.logo_text_effect || 'none';
+    document.getElementById('logoOpacity').value = config.logo_opacity !== undefined ? config.logo_opacity : 1;
+    document.getElementById('logoOpacityValue').textContent = config.logo_opacity !== undefined ? Number(config.logo_opacity).toFixed(2) : '1.00';
+    document.getElementById('logoImageEffect').value = config.logo_image_effect || 'none';
+    updateEffectPreview('logoImage', config.logo_image_effect || 'none');
     // 标题样式
     document.getElementById('siteTitleFont').value = config.site_title_font || '';
+    updateFontPreview('siteTitle');
     document.getElementById('siteTitleSize').value = config.site_title_size || 36;
     document.getElementById('siteTitleColor').value = config.site_title_color || '#ffffff';
     document.getElementById('siteTitleColorText').value = config.site_title_color || '#ffffff';
     document.getElementById('siteTitleOpacity').value = config.site_title_opacity !== undefined ? config.site_title_opacity : 1;
     document.getElementById('siteTitleOpacityValue').textContent = config.site_title_opacity !== undefined ? Number(config.site_title_opacity).toFixed(2) : '1.00';
     document.getElementById('siteTitleEffect').value = config.site_title_effect || 'none';
+    updateEffectPreview('siteTitle', config.site_title_effect || 'none');
     // 副标题样式
     document.getElementById('siteSubtitleFont').value = config.site_subtitle_font || '';
+    updateFontPreview('siteSubtitle');
     document.getElementById('siteSubtitleSize').value = config.site_subtitle_size || 18;
     document.getElementById('siteSubtitleColor').value = config.site_subtitle_color || '#aaaaaa';
     document.getElementById('siteSubtitleColorText').value = config.site_subtitle_color || '#aaaaaa';
     document.getElementById('siteSubtitleOpacity').value = config.site_subtitle_opacity !== undefined ? config.site_subtitle_opacity : 1;
     document.getElementById('siteSubtitleOpacityValue').textContent = config.site_subtitle_opacity !== undefined ? Number(config.site_subtitle_opacity).toFixed(2) : '1.00';
     document.getElementById('siteSubtitleEffect').value = config.site_subtitle_effect || 'none';
+    updateEffectPreview('siteSubtitle', config.site_subtitle_effect || 'none');
     // 底部文字样式
     document.getElementById('siteFooterFont').value = config.site_footer_font || '';
+    updateFontPreview('siteFooter');
     document.getElementById('siteFooterSize').value = config.site_footer_size || 14;
     document.getElementById('siteFooterColor').value = config.site_footer_color || '#888888';
     document.getElementById('siteFooterColorText').value = config.site_footer_color || '#888888';
     document.getElementById('siteFooterOpacity').value = config.site_footer_opacity !== undefined ? config.site_footer_opacity : 1;
     document.getElementById('siteFooterOpacityValue').textContent = config.site_footer_opacity !== undefined ? Number(config.site_footer_opacity).toFixed(2) : '1.00';
     document.getElementById('siteFooterEffect').value = config.site_footer_effect || 'none';
+    updateEffectPreview('siteFooter', config.site_footer_effect || 'none');
 
     // 强调色
     const accent = config.accent_color || '#667eea';
@@ -1052,17 +1220,65 @@ function onBgTypeChange(type) {
     });
 }
 
-// ===== Logo 类型切换 =====
-function onLogoTypeChange(type) {
-    document.getElementById('logoImageGroup').style.display = type === 'image' ? 'block' : 'none';
-    document.getElementById('logoTextGroup').style.display = type === 'text' ? 'block' : 'none';
-    document.getElementById('logoFitGroup').style.display = type === 'image' ? 'block' : 'none';
+// ===== 标题模式切换（文字模式/图片模式）=====
+function onTitleModeChange(mode) {
+    document.getElementById('titleTextModeArea').style.display = mode === 'logo_image' ? 'none' : 'block';
+    document.getElementById('titleImageModeArea').style.display = mode === 'logo_image' ? 'block' : 'none';
     document.querySelectorAll('.radio-card').forEach(el => {
         const v = el.getAttribute('data-value');
-        if (v === 'image' || v === 'text') {
-            el.classList.toggle('active', v === type);
+        if (v === 'logo_text' || v === 'logo_image') {
+            el.classList.toggle('active', v === mode);
         }
     });
+    // 当选择图片模式时，禁用siteTitle输入框（不可编辑）
+    document.getElementById('siteTitle').disabled = (mode === 'logo_image');
+    document.getElementById('siteTitle').style.opacity = (mode === 'logo_image') ? '0.5' : '1';
+    document.getElementById('siteTitle').style.cursor = (mode === 'logo_image') ? 'not-allowed' : '';
+}
+
+function onLogoWidthChange(value) {
+    document.getElementById('logoWidthSlider').value = value;
+    document.getElementById('logoWidthInput').value = value;
+    // 如果勾选了等比例，高度跟随宽度
+    if (document.getElementById('logoAspectLock').checked) {
+        document.getElementById('logoHeightSlider').value = value;
+        document.getElementById('logoHeightInput').value = value;
+    }
+    updateLogoSizeDisplay();
+}
+
+function onLogoHeightChange(value) {
+    document.getElementById('logoHeightSlider').value = value;
+    document.getElementById('logoHeightInput').value = value;
+    // 如果勾选了等比例，宽度跟随高度
+    if (document.getElementById('logoAspectLock').checked) {
+        document.getElementById('logoWidthSlider').value = value;
+        document.getElementById('logoWidthInput').value = value;
+    }
+    updateLogoSizeDisplay();
+}
+
+function onLogoScaleMode(checked) {
+    // 如果勾选等比例，让高度滑块=宽度滑块并禁用高度滑块
+    const heightSlider = document.getElementById('logoHeightSlider');
+    const heightInput = document.getElementById('logoHeightInput');
+    if (checked) {
+        const w = document.getElementById('logoWidthSlider').value;
+        heightSlider.value = w;
+        heightInput.value = w;
+        heightSlider.disabled = true;
+        heightInput.disabled = true;
+    } else {
+        heightSlider.disabled = false;
+        heightInput.disabled = false;
+    }
+    updateLogoSizeDisplay();
+}
+
+function updateLogoSizeDisplay() {
+    const w = document.getElementById('logoWidthSlider').value;
+    const h = document.getElementById('logoHeightSlider').value;
+    document.getElementById('logoCurrentSize').textContent = `${w}% × ${h}%`;
 }
 
 function onLogoLayoutChange(type) {
@@ -1074,13 +1290,9 @@ function onLogoLayoutChange(type) {
     });
 }
 
-function onLogoFitChange(type) {
-    document.querySelectorAll('.radio-card').forEach(el => {
-        const v = el.getAttribute('data-value');
-        if (v === 'contain' || v === 'cover') {
-            el.classList.toggle('active', v === type);
-        }
-    });
+function onLogoRotateChange(value) {
+    document.getElementById('logoRotateSlider').value = value;
+    document.getElementById('logoRotateInput').value = value;
 }
 
 // ===== 样式面板折叠 =====
@@ -1214,35 +1426,79 @@ async function uploadBg() {
     }
 }
 
-// ===== 搜索引擎 =====
-function renderEngines() {
-    const el = document.getElementById('engineList');
-    el.innerHTML = data.searchEngines.map((e, i) => `
-        <div class="site-item">
-            <div class="info">
-                <div class="name">${e.name}</div>
-                <div class="url">${e.url}</div>
-            </div>
-            <div class="actions">
-                <button class="edit-btn" onclick="editEngine(${i})">✏️ 编辑</button>
-                <button class="del-btn" onclick="deleteEngine(${i})">🗑️ 删除</button>
-            </div>
-        </div>
-    `).join('');
-    if (data.searchEngines.length === 0) {
-        el.innerHTML = '<div class="empty-state">暂无搜索引擎，点击上方添加</div>';
+// ===== 通用 insertWithOrder 函数 =====
+function insertWithOrder(arr, item, orderField, order) {
+    if (!order || order < 1) {
+        // 追加到最后
+        const maxOrder = arr.length > 0 ? Math.max(...arr.map(x => x[orderField] ?? 0)) : 0;
+        item[orderField] = maxOrder + 1;
+        arr.push(item);
+    } else {
+        // 检查序号是否被占用
+        const conflict = arr.find(x => x[orderField] === order);
+        if (conflict) {
+            // 从该位置起所有项+1
+            arr.forEach(x => {
+                if ((x[orderField] ?? 0) >= order) {
+                    x[orderField] = (x[orderField] ?? 0) + 1;
+                }
+            });
+        }
+        item[orderField] = order;
+        arr.push(item);
+        // 按order重新排序
+        arr.sort((a, b) => (a[orderField] ?? 999) - (b[orderField] ?? 999));
     }
 }
 
+// ===== 搜索引擎 =====
+function renderEngines() {
+    const el = document.getElementById('engineList');
+    const sorted = [...data.searchEngines]
+        .map((e, i) => ({ ...e, _origIdx: i }))
+        .sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
+    el.innerHTML = sorted.map((e) => `<div class=\"site-item engine-item\" data-item-type=\"engine\" data-engine-idx=\"${e._origIdx}\">
+        <span class=\"drag-handle\" title=\"拖动排序\">⠿</span>
+        <span class=\"order-badge\">${e.order ?? e._origIdx+1}</span>
+        ${e.icon ? `<img class=\"item-icon\" src=\"${esc(e.icon)}\" onerror=\"this.style.display='none'\">` : ''}
+        <div class=\"info\">
+            <div class=\"name\">${esc(e.name)}</div>
+            <div class=\"url\">${esc(e.url)}</div>
+        </div>
+        <div class=\"actions\">
+            <button class=\"edit-btn\" onclick=\"editEngine(${e._origIdx})\">✏️ 编辑</button>
+            <button class=\"del-btn\" onclick=\"deleteEngine(${e._origIdx})\">🗑️ 删除</button>
+        </div>
+    </div>`).join('');
+    if (data.searchEngines.length === 0) {
+        el.innerHTML = '<div class=\"empty-state\">暂无搜索引擎，点击上方添加</div>';
+    }
+    _afterRender();
+}
+
 function addEngine() {
+    const nextOrder = data.searchEngines.length > 0 ? Math.max(...data.searchEngines.map(e => e.order ?? 0)) + 1 : 1;
     showModal('添加搜索引擎', `
-        <div class="form-group"><label>名称</label><input id="engineName" placeholder="Google"></div>
-        <div class="form-group"><label>搜索URL</label><input id="engineUrl" placeholder="https://www.google.com/search?q="></div>
+        <div class=\"form-row\">
+            <div class=\"form-group\"><label>名称</label><input id=\"engineName\" placeholder=\"Google\"></div>
+            <div class=\"form-group\"><label>序号 (留空自动排到最后)</label><input id=\"engineOrder\" type=\"number\" min=\"1\" placeholder=\"${nextOrder}\"></div>
+        </div>
+        <div class=\"form-group\"><label>搜索URL</label><input id=\"engineUrl\" placeholder=\"https://www.google.com/search?q=\"></div>
+        <div class=\"form-group\"><label>图标URL (可选)</label>
+            <div style=\"display:flex;gap:8px;\">
+                <input id=\"engineIcon\" placeholder=\"https://www.google.com/favicon.ico\" style=\"flex:1;\">
+                <button type=\"button\" class=\"btn-ghost\" onclick=\"uploadToField('engineIcon', true)\" style=\"padding:8px 12px;font-size:12px;white-space:nowrap;\">📤 上传</button>
+            </div>
+        </div>
     `, () => {
         const name = document.getElementById('engineName').value.trim();
         const url = document.getElementById('engineUrl').value.trim();
         if (!name || !url) { toast('请填写完整信息', 'error'); return; }
-        data.searchEngines.push({ name, url });
+        const order = parseInt(document.getElementById('engineOrder').value) || 0;
+        const icon = document.getElementById('engineIcon').value.trim() || '';
+        const item = { name, url };
+        if (icon) item.icon = icon;
+        insertWithOrder(data.searchEngines, item, 'order', order);
         renderEngines();
         toast('搜索引擎已添加', 'success');
         closeModal();
@@ -1252,17 +1508,35 @@ function addEngine() {
 function editEngine(i) {
     const e = data.searchEngines[i];
     showModal('编辑搜索引擎', `
-        <div class="form-group"><label>名称</label><input id="engineName" value="${esc(e.name)}"></div>
-        <div class="form-group"><label>搜索URL</label><input id="engineUrl" value="${esc(e.url)}"></div>
+        <div class=\"form-row\">
+            <div class=\"form-group\"><label>名称</label><input id=\"engineName\" value=\"${esc(e.name)}\"></div>
+            <div class=\"form-group\"><label>序号</label><input id=\"engineOrder\" type=\"number\" min=\"1\" value=\"${e.order ?? i+1}\"></div>
+        </div>
+        <div class=\"form-group\"><label>搜索URL</label><input id=\"engineUrl\" value=\"${esc(e.url)}\"></div>
+        <div class=\"form-group\"><label>图标URL (可选)</label>
+            <div style=\"display:flex;gap:8px;\">
+                <input id=\"engineIcon\" value=\"${esc(e.icon||'')}\" style=\"flex:1;\" placeholder=\"留空则不显示图标\">
+                <button type=\"button\" class=\"btn-ghost\" onclick=\"uploadToField('engineIcon', true)\" style=\"padding:8px 12px;font-size:12px;white-space:nowrap;\">📤 上传</button>
+            </div>
+        </div>
     `, () => {
-        data.searchEngines[i] = {
-            name: document.getElementById('engineName').value.trim(),
-            url: document.getElementById('engineUrl').value.trim()
-        };
+        const name = document.getElementById('engineName').value.trim();
+        const url = document.getElementById('engineUrl').value.trim();
+        if (!name || !url) { toast('请填写完整信息', 'error'); return; }
+        const order = parseInt(document.getElementById('engineOrder').value) || (e.order ?? i+1);
+        const icon = document.getElementById('engineIcon').value.trim() || '';
+        data.searchEngines[i] = { name, url };
+        if (icon) data.searchEngines[i].icon = icon;
+        data.searchEngines[i].order = order;
         renderEngines();
         toast('已更新', 'success');
         closeModal();
     });
+}
+
+// render 后自动重新初始化拖拽
+function _afterRender() {
+    setTimeout(initAllDrag, 10);
 }
 
 function deleteEngine(i) {
@@ -1272,37 +1546,251 @@ function deleteEngine(i) {
     toast('已删除', 'info');
 }
 
-// ===== 快捷链接 =====
-function renderQuickLinks() {
-    const el = document.getElementById('quickLinkList');
-    el.innerHTML = data.quickLinks.map((l, i) => `
-        <div class="site-item">
-            <div class="info">
-                <div class="name">${l.name}</div>
-                <div class="url">${l.url}</div>
-            </div>
-            <div class="actions">
-                <button class="edit-btn" onclick="editQuickLink(${i})">✏️ 编辑</button>
-                <button class="del-btn" onclick="deleteQuickLink(${i})">🗑️ 删除</button>
-            </div>
-        </div>
-    `).join('');
-    if (data.quickLinks.length === 0) {
-        el.innerHTML = '<div class="empty-state">暂无快捷链接</div>';
+// ===== 鼠标吸附拖拽排序（引擎、快捷链接、分类、站点） =====
+// ===== 鼠标吸附拖拽（通用） =====
+// 全局拖拽状态
+let _dragState = null;
+let _dragConfigs = [];
+
+function initMouseDrag(containerSelector, itemSelector, getReorderInfo) {
+    _dragConfigs.push({ containerSelector, itemSelector, getReorderInfo });
+}
+
+function _handleDragMouseDown(e) {
+    // 遍历所有配置，找到匹配的 item
+    for (const cfg of _dragConfigs) {
+        const item = e.target.closest(cfg.itemSelector);
+        if (!item) continue;
+
+        // 必须通过拖拽手柄（.drag-handle）启动拖拽，或者点击非交互元素
+        const isDragHandle = e.target.closest('.drag-handle') !== null;
+        const isNonInteractive = !e.target.closest('button') && !e.target.closest('input') && !e.target.closest('select') && !e.target.closest('.emoji-picker');
+        if (!isDragHandle && !isNonInteractive) continue;
+
+        const container = item.closest(cfg.containerSelector);
+        if (!container) continue;
+
+        // 如果是分类卡片但点击在站点列表内部，跳过（让站点拖拽处理）
+        if (item.matches('.category-card') && e.target.closest('.site-list')) continue;
+
+        const items = [...container.querySelectorAll(cfg.itemSelector)];
+        const index = items.indexOf(item);
+        if (index === -1) return;
+
+        // 创建克隆
+        const rect = item.getBoundingClientRect();
+        const clone = item.cloneNode(true);
+        clone.style.position = 'fixed';
+        clone.style.pointerEvents = 'none';
+        clone.style.zIndex = '9999';
+        clone.style.opacity = '0.85';
+        clone.style.width = rect.width + 'px';
+        clone.style.transform = 'scale(1.02)';
+        clone.style.boxShadow = '0 8px 32px rgba(0,0,0,0.4)';
+        clone.style.borderRadius = '8px';
+        clone.style.overflow = 'hidden';
+        clone.style.left = rect.left + 'px';
+        clone.style.top = rect.top + 'px';
+        document.body.appendChild(clone);
+
+        item.classList.add('dragging-item');
+
+        _dragState = {
+            el: item,
+            clone: clone,
+            offsetX: e.clientX - rect.left,
+            offsetY: e.clientY - rect.top,
+            origIndex: index,
+            container: container,
+            items: items,
+            cfg: cfg
+        };
+        return; // 首次匹配即处理
     }
 }
 
+function _handleDragMouseMove(e) {
+    if (!_dragState) return;
+    e.preventDefault();
+
+    // 克隆跟随光标
+    _dragState.clone.style.top = (e.clientY - _dragState.offsetY) + 'px';
+    _dragState.clone.style.left = (e.clientX - _dragState.offsetX) + 'px';
+
+    // 检测鼠标位置下的目标
+    const target = document.elementFromPoint(e.clientX, e.clientY);
+    const targetItem = target ? target.closest(_dragState.cfg.itemSelector) : null;
+
+    // 清除指示器
+    _dragState.items.forEach(item => item.classList.remove('drag-before', 'drag-after'));
+
+    if (targetItem && targetItem !== _dragState.el && _dragState.container.contains(targetItem)) {
+        const rect = targetItem.getBoundingClientRect();
+        const mid = rect.top + rect.height / 2;
+        if (e.clientY < mid) {
+            targetItem.classList.add('drag-before');
+        } else {
+            targetItem.classList.add('drag-after');
+        }
+    }
+}
+
+function _handleDragMouseUp(e) {
+    if (!_dragState) return;
+
+    // 移除克隆
+    if (_dragState.clone.parentNode) {
+        _dragState.clone.parentNode.removeChild(_dragState.clone);
+    }
+    _dragState.el.classList.remove('dragging-item');
+
+    // 清除指示器
+    _dragState.items.forEach(item => item.classList.remove('drag-before', 'drag-after'));
+
+    // 查找插入位置
+    const target = document.elementFromPoint(e.clientX, e.clientY);
+    const targetItem = target ? target.closest(_dragState.cfg.itemSelector) : null;
+
+    if (targetItem && targetItem !== _dragState.el && _dragState.container.contains(targetItem)) {
+        const rect = targetItem.getBoundingClientRect();
+        const insertAfter = e.clientY >= rect.top + rect.height / 2;
+        _dragState.cfg.getReorderInfo(_dragState.origIndex, targetItem, insertAfter);
+    }
+
+    _dragState = null;
+}
+
+// 绑定全局事件（只执行一次）
+document.addEventListener('mousedown', _handleDragMouseDown);
+document.addEventListener('mousemove', _handleDragMouseMove);
+document.addEventListener('mouseup', _handleDragMouseUp);
+
+// 初始化所有拖拽
+function initAllDrag() {
+    // 先清空配置（避免重复）
+    _dragConfigs = [];
+    // 搜索引擎拖拽
+    initMouseDrag('#engineList', '.engine-item', function(fromIdx, targetItem, insertAfter) {
+        const items = [...document.querySelectorAll('#engineList .engine-item')];
+        const toIdx = items.indexOf(targetItem);
+        if (fromIdx === toIdx) return;
+        const [moved] = data.searchEngines.splice(fromIdx, 1);
+        const adjustedTo = insertAfter ? toIdx + 1 : toIdx;
+        data.searchEngines.splice(adjustedTo, 0, moved);
+        data.searchEngines.forEach((e, idx) => { e.order = idx + 1; });
+        renderEngines();
+        toast('✅ 排序已更新', 'success');
+    });
+
+    // 快捷链接拖拽
+    initMouseDrag('#quickLinkList', '.ql-item', function(fromIdx, targetItem, insertAfter) {
+        const items = [...document.querySelectorAll('#quickLinkList .ql-item')];
+        const toIdx = items.indexOf(targetItem);
+        if (fromIdx === toIdx) return;
+        const [moved] = data.quickLinks.splice(fromIdx, 1);
+        const adjustedTo = insertAfter ? toIdx + 1 : toIdx;
+        data.quickLinks.splice(adjustedTo, 0, moved);
+        data.quickLinks.forEach((l, idx) => { l.order = idx + 1; });
+        renderQuickLinks();
+        toast('✅ 排序已更新', 'success');
+    });
+
+    // 分类卡片拖拽
+    initMouseDrag('#categoryList', '.category-card', function(fromIdx, targetItem, insertAfter) {
+        const items = [...document.querySelectorAll('#categoryList .category-card')];
+        const toIdx = items.indexOf(targetItem);
+        if (fromIdx === toIdx) return;
+        const [moved] = data.categories.splice(fromIdx, 1);
+        const adjustedTo = insertAfter ? toIdx + 1 : toIdx;
+        data.categories.splice(adjustedTo, 0, moved);
+        // 更新每个分类的 catOrder
+        data.categories.forEach((c, idx) => { c.catOrder = idx + 1; });
+        renderCategories();
+        // 保存到服务器
+        fetch('/api/data', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        }).catch(() => {});
+        toast('✅ 分类排序已保存', 'success');
+    });
+
+    // 分类内站点拖拽（为每个分类的 site-list 独立初始化）
+    data.categories.forEach((c, ci) => {
+        const siteListId = 'siteList-' + ci;
+        const siteList = document.getElementById(siteListId);
+        if (!siteList) return;
+        initMouseDrag('#' + siteListId, '.site-item', function(fromIdx, targetItem, insertAfter) {
+            const items = [...document.querySelectorAll('#' + siteListId + ' .site-item')];
+            const toIdx = items.indexOf(targetItem);
+            if (fromIdx === toIdx) return;
+            const sites = data.categories[ci].sites;
+            const [moved] = sites.splice(fromIdx, 1);
+            const adjustedTo = insertAfter ? toIdx + 1 : toIdx;
+            sites.splice(adjustedTo, 0, moved);
+            sites.forEach((s, idx) => { s.order = idx + 1; });
+            renderCategories();
+            fetch('/api/data', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            }).catch(() => {});
+            toast('✅ 站点排序已保存', 'success');
+        });
+    });
+}
+
+// ===== 快捷链接 =====
+function renderQuickLinks() {
+    const el = document.getElementById('quickLinkList');
+    const sorted = [...data.quickLinks]
+        .map((l, i) => ({ ...l, _origIdx: i }))
+        .sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
+    el.innerHTML = sorted.map((l) => `<div class=\"site-item ql-item\" data-item-type=\"quicklink\" data-ql-idx=\"${l._origIdx}\">
+        <span class=\"drag-handle\" title=\"拖动排序\">⠿</span>
+        <span class=\"order-badge\">${l.order ?? l._origIdx+1}</span>
+        ${l.icon ? `<img class=\"item-icon\" src=\"${esc(l.icon)}\" onerror=\"this.style.display='none'\">` : ''}
+        <div class=\"info\">
+            <div class=\"name\">${esc(l.name)}</div>
+            <div class=\"url\">${esc(l.url)}</div>
+        </div>
+        <div class=\"actions\">
+            <button class=\"edit-btn\" onclick=\"editQuickLink(${l._origIdx})\">✏️ 编辑</button>
+            <button class=\"del-btn\" onclick=\"deleteQuickLink(${l._origIdx})\">🗑️ 删除</button>
+        </div>
+    </div>`).join('');
+    if (data.quickLinks.length === 0) {
+        el.innerHTML = '<div class=\"empty-state\">暂无快捷链接</div>';
+    }
+    _afterRender();
+}
+
 function addQuickLink() {
+    const nextOrder = data.quickLinks.length > 0 ? Math.max(...data.quickLinks.map(l => l.order ?? 0)) + 1 : 1;
     showModal('添加快捷链接', `
-        <div class="form-group"><label>名称</label><input id="qlName" placeholder="百度"></div>
-        <div class="form-group"><label>链接</label><input id="qlUrl" placeholder="https://www.baidu.com"></div>
-        <div class="form-group"><label>图标URL (可选)</label><input id="qlIcon" placeholder="https://www.baidu.com/favicon.ico"></div>
+        <div class=\"form-row\">
+            <div class=\"form-group\"><label>名称</label><input id=\"qlName\" placeholder=\"百度\"></div>
+            <div class=\"form-group\"><label>序号 (留空自动排到最后)</label><input id=\"qlOrder\" type=\"number\" min=\"1\" placeholder=\"${nextOrder}\"></div>
+        </div>
+        <div class=\"form-group\"><label>链接</label><input id=\"qlUrl\" placeholder=\"https://www.baidu.com\"></div>
+        <div class=\"form-group\"><label>图标</label>
+            <div style=\"display:flex;gap:8px;\">
+                <input id=\"qlIcon\" placeholder=\"https://www.baidu.com/favicon.ico\" style=\"flex:1;\">
+                <button type=\"button\" class=\"btn-ghost\" onclick=\"uploadToField('qlIcon', true)\" style=\"padding:8px 12px;font-size:12px;white-space:nowrap;\">📤 上传</button>
+            </div>
+            <div class=\"form-hint\">留空自动从链接域名抓取 favicon.ico</div>
+        </div>
     `, () => {
         const name = document.getElementById('qlName').value.trim();
         const url = document.getElementById('qlUrl').value.trim();
-        const icon = document.getElementById('qlIcon').value.trim() || `https://${new URL(url).hostname}/favicon.ico`;
         if (!name || !url) { toast('请填写名称和链接', 'error'); return; }
-        data.quickLinks.push({ name, url, icon });
+        const order = parseInt(document.getElementById('qlOrder').value) || 0;
+        let icon = document.getElementById('qlIcon').value.trim();
+        if (!icon) {
+            try { icon = `https://${new URL(url).hostname}/favicon.ico`; } catch(e) { icon = ''; }
+        }
+        const item = { name, url, icon };
+        insertWithOrder(data.quickLinks, item, 'order', order);
         renderQuickLinks();
         toast('快捷链接已添加', 'success');
         closeModal();
@@ -1312,15 +1800,28 @@ function addQuickLink() {
 function editQuickLink(i) {
     const l = data.quickLinks[i];
     showModal('编辑快捷链接', `
-        <div class="form-group"><label>名称</label><input id="qlName" value="${esc(l.name)}"></div>
-        <div class="form-group"><label>链接</label><input id="qlUrl" value="${esc(l.url)}"></div>
-        <div class="form-group"><label>图标URL</label><input id="qlIcon" value="${esc(l.icon||'')}"></div>
+        <div class=\"form-row\">
+            <div class=\"form-group\"><label>名称</label><input id=\"qlName\" value=\"${esc(l.name)}\"></div>
+            <div class=\"form-group\"><label>序号</label><input id=\"qlOrder\" type=\"number\" min=\"1\" value=\"${l.order ?? i+1}\"></div>
+        </div>
+        <div class=\"form-group\"><label>链接</label><input id=\"qlUrl\" value=\"${esc(l.url)}\"></div>
+        <div class=\"form-group\"><label>图标</label>
+            <div style=\"display:flex;gap:8px;\">
+                <input id=\"qlIcon\" value=\"${esc(l.icon||'')}\" style=\"flex:1;\" placeholder=\"留空自动从域名抓取 favicon.ico\">
+                <button type=\"button\" class=\"btn-ghost\" onclick=\"uploadToField('qlIcon', true)\" style=\"padding:8px 12px;font-size:12px;white-space:nowrap;\">📤 上传</button>
+            </div>
+            <div class=\"form-hint\">留空自动从链接域名抓取 favicon.ico</div>
+        </div>
     `, () => {
-        data.quickLinks[i] = {
-            name: document.getElementById('qlName').value.trim(),
-            url: document.getElementById('qlUrl').value.trim(),
-            icon: document.getElementById('qlIcon').value.trim()
-        };
+        const name = document.getElementById('qlName').value.trim();
+        const url = document.getElementById('qlUrl').value.trim();
+        if (!name || !url) { toast('请填写名称和链接', 'error'); return; }
+        const order = parseInt(document.getElementById('qlOrder').value) || (l.order ?? i+1);
+        let icon = document.getElementById('qlIcon').value.trim();
+        if (!icon) {
+            try { icon = `https://${new URL(url).hostname}/favicon.ico`; } catch(e) { icon = ''; }
+        }
+        data.quickLinks[i] = { name, url, icon, order };
         renderQuickLinks();
         toast('已更新', 'success');
         closeModal();
@@ -1369,17 +1870,10 @@ function renderCategories() {
     const el = document.getElementById('categoryList');
     el.innerHTML = sortedCats.map((c) => {
         const ci = c._origIdx;
-        return `<div class="category-card" draggable="false" data-cat-index="${ci}"
-            ondragstart="catDragStart(event, ${ci})"
-            ondragover="catDragOver(event)"
-            ondragenter="catDragEnter(event)"
-            ondragleave="catDragLeave(event)"
-            ondrop="catDrop(event, ${ci})"
-            ondragend="catDragEnd(event)">
+        return `<div class="category-card" data-item-type="category" data-cat-index="${ci}">
             <div class="cat-header">
                 <span class="drag-handle" title="拖动排序">⠿</span>
-                <input class="order-input" value="${c.catOrder ?? ci+1}" id="catOrderInput-${ci}"
-                    onchange="updateCat(${ci},'catOrder',parseInt(this.value)||1)" type="number" min="1" title="分类序号">
+                <span class="order-badge" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:rgba(102,126,234,0.2);color:#667eea;font-size:12px;font-weight:700;flex-shrink:0;">${c.catOrder ?? ci+1}</span>
                 <input class="icon-input" value="${esc(c.icon)}" onchange="updateCat(${ci},'icon',this.value)" placeholder="图标" id="catIconInput-${ci}">
                 <button type="button" class="emoji-btn" onclick="toggleEmojiPicker(${ci})" title="选择Emoji">😊</button>
                 <input value="${esc(c.name)}" onchange="updateCat(${ci},'name',this.value)" placeholder="分类名称">
@@ -1395,11 +1889,11 @@ function renderCategories() {
                     .map((s, si) => ({ ...s, _origIdx: si }))
                     .sort((a, b) => (a.order ?? 999) - (b.order ?? 999))
                     .map((s, si) =>
-                    `<div class="site-item">
+                    `<div class="site-item" data-item-type="site" data-cat-index="${ci}" data-site-idx="${s._origIdx}">
+                        <span class="drag-handle" title="拖动排序">⠿</span>
+                        <span class="order-badge" style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:rgba(102,126,234,0.2);color:#667eea;font-size:11px;font-weight:600;margin-right:8px;flex-shrink:0;">${si+1}</span>
                         <div class="info">
-                            <span class="order-badge" style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:rgba(102,126,234,0.2);color:#667eea;font-size:11px;font-weight:600;margin-right:8px;flex-shrink:0;">${si+1}</span>
                             <span class="name">${s.name}</span>
-                            <span style="font-size:11px;color:#555;display:block;margin-top:2px;">#${s.order ?? '-'}</span>
                             <div class="url">${s.url}</div>
                         </div>
                         <div class="actions">
@@ -1415,6 +1909,7 @@ function renderCategories() {
     if (data.categories.length === 0) {
         el.innerHTML = '<div class="empty-state">暂无分类，点击上方添加</div>';
     }
+    _afterRender();
 }
 
 function updateCat(ci, field, value) {
@@ -1506,57 +2001,6 @@ function toggleModalEmojiPicker() {
     if (picker) picker.classList.toggle('open');
 }
 
-// ===== 分类拖拽排序 =====
-let catDragSrc = null;
-
-function catDragStart(e, ci) {
-    catDragSrc = ci;
-    e.dataTransfer.effectAllowed = 'move';
-    e.dataTransfer.setData('text/plain', String(ci));
-    const el = e.target.closest('.category-card');
-    setTimeout(() => el.classList.add('dragging-cat'), 0);
-}
-
-function catDragOver(e) {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-}
-
-function catDragEnter(e) {
-    e.preventDefault();
-    const el = e.target.closest('.category-card');
-    if (el && !el.classList.contains('dragging-cat')) {
-        el.classList.add('drag-over-cat');
-    }
-}
-
-function catDragLeave(e) {
-    const el = e.target.closest('.category-card');
-    if (el) el.classList.remove('drag-over-cat');
-}
-
-function catDragEnd(e) {
-    document.querySelectorAll('.category-card').forEach(el => {
-        el.classList.remove('dragging-cat', 'drag-over-cat');
-    });
-    catDragSrc = null;
-}
-
-function catDrop(e, ci) {
-    e.preventDefault();
-    document.querySelectorAll('.category-card').forEach(el => {
-        el.classList.remove('drag-over-cat');
-    });
-    if (catDragSrc === null || catDragSrc === ci) return;
-
-    const [moved] = data.categories.splice(catDragSrc, 1);
-    const insertAt = ci > catDragSrc ? ci - 1 : ci;
-    data.categories.splice(insertAt, 0, moved);
-    renderCategories();
-    toast('✅ 分类排序已更新', 'success');
-    catDragSrc = null;
-}
-
 function addSite(ci) {
     // 自动计算下一个序号
     const sites = data.categories[ci].sites;
@@ -1643,15 +2087,20 @@ async function saveData() {
         site_title: document.getElementById('siteTitle').value.trim() || '东白湖之家',
         site_subtitle: document.getElementById('siteSubtitle').value.trim() || '上网从这里开始',
         site_logo: document.getElementById('siteLogo').value.trim(),
-        logo_type: document.querySelector('input[name="logoType"]:checked')?.value || 'image',
+        logo_mode: document.querySelector('input[name="titleMode"]:checked')?.value || 'logo_text',
+        logo_width_pct: parseInt(document.getElementById('logoWidthSlider').value) || 50,
+        logo_height_pct: parseInt(document.getElementById('logoHeightSlider').value) || 50,
+        logo_scale_mode: document.getElementById('logoAspectLock').checked,
         logo_layout: document.querySelector('input[name="logoLayout"]:checked')?.value || 'horizontal',
+        logo_rotate: parseInt(document.getElementById('logoRotateSlider').value) || 0,
         logo_text: document.getElementById('logoText').value.trim(),
         logo_text_font: document.getElementById('logoTextFont').value,
         logo_text_size: parseInt(document.getElementById('logoTextSize').value) || 48,
         logo_text_color: document.getElementById('logoTextColorText').value.trim() || '#ffffff',
         logo_text_opacity: parseFloat(document.getElementById('logoTextOpacity').value) || 1,
         logo_text_effect: document.getElementById('logoTextEffect').value,
-        logo_fit: document.querySelector('input[name="logoFit"]:checked')?.value || 'contain',
+        logo_opacity: parseFloat(document.getElementById('logoOpacity').value) || 1,
+        logo_image_effect: document.getElementById('logoImageEffect').value,
         site_title_font: document.getElementById('siteTitleFont').value,
         site_title_size: parseInt(document.getElementById('siteTitleSize').value) || 36,
         site_title_color: document.getElementById('siteTitleColorText').value.trim() || '#ffffff',
@@ -1797,6 +2246,55 @@ function closeModal() {
 document.getElementById('modalOverlay').onclick = function(e) {
     if (e.target === this) closeModal();
 };
+
+// ===== 工具函数 =====
+function escapeHtml(str) {
+    if (!str) return '';
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
+// ===== 字体预览 =====
+function updateFontPreview(prefix) {
+    const preview = document.getElementById(prefix + 'FontPreview');
+    if (!preview) return;
+    const fontSelect = document.getElementById(prefix + 'Font');
+    const font = fontSelect.value;
+    // 读取对应字段的实际内容
+    let content = '';
+    if (prefix === 'siteTitle') content = document.getElementById('siteTitle').value || '网站标题';
+    else if (prefix === 'siteSubtitle') content = document.getElementById('siteSubtitle').value || '副标题';
+    else if (prefix === 'siteFooter') content = document.getElementById('siteFooter').value || '底部文字';
+    else content = '字体预览';
+    if (font) {
+        preview.innerHTML = '<span style="font-family:&quot;' + font + '&quot;,sans-serif;font-size:20px;">' + escapeHtml(content) + '</span>';
+    } else {
+        preview.innerHTML = '<span style="opacity:0.5;">' + escapeHtml(content) + '（默认字体）</span>';
+    }
+}
+
+// ===== 特效预览 =====
+function updateEffectPreview(prefix, effect) {
+    const preview = document.getElementById(prefix + 'EffectPreview');
+    if (!preview) return;
+    const effects = {
+        none: '',
+        marquee: '<marquee style="color:#667eea">🔄 滚动效果运行中...</marquee>',
+        typing: '<span style="border-right:2px solid #667eea;animation:blink 1s step-end infinite;">✍️ 打字机效果...</span>',
+        fade: '<span style="animation:fadeEffect 1.5s ease-in-out infinite">✨ 淡入淡出效果</span>',
+        blink: '<span style="animation:blink 1s step-end infinite">💡 闪烁效果</span>',
+        neon: '<span style="text-shadow:0 0 10px #667eea,0 0 20px #667eea,0 0 40px #667eea;animation:pulse 2s ease-in-out infinite">💜 霓虹效果</span>',
+        pulse: '<span style="animation:pulse 2s ease-in-out infinite">💓 脉冲效果</span>',
+        shake: '<span style="display:inline-block;animation:shake 0.5s ease-in-out infinite">🤪 摇摆效果</span>',
+        bounce: '<span style="display:inline-block;animation:bounce 1s ease infinite">🏀 弹跳效果</span>',
+        heartbeat: '<span style="display:inline-block;animation:heartbeat 1.5s ease-in-out infinite">❤️ 心跳效果</span>',
+        rotate3d: '<span style="display:inline-block;animation:rotate3d 2s ease-in-out infinite">🔄 翻转效果</span>',
+        glow: '<span style="animation:glow 2s ease-in-out infinite">🌟 光晕效果</span>',
+        inkblot: '<span style="filter:blur(2px);animation:inkblot 3s ease-in-out infinite">🖌️ 墨迹效果</span>'
+    };
+    preview.innerHTML = effects[effect] || '';
+}
 
 // ===== 启动 =====
 checkLogin();

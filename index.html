@@ -122,10 +122,11 @@
     </style>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=ZCOOL+XiaoWei&family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;700&display=swap" rel="stylesheet">
+    <!-- 预加载全部可选字体（中文+英文） -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700&amp;family=Noto+Serif+SC:wght@400;700&amp;family=ZCOOL+XiaoWei&amp;family=Ma+Shan+Zheng&amp;family=Liu+Jian+Mao+Cao&amp;family=ZCOOL+QingKe+HuangYou&amp;family=Long+Cang&amp;family=ZCOOL+KuaiLe&amp;family=LXGW+WenKai&amp;family=Georgia:ital,wght@0,400;1,400&amp;family=Times+New+Roman&display=swap" rel="stylesheet">
     <style id="effectStyles">
         /* ===== 文字特效 ===== */
-        .effect-marquee {
+        #siteTitle.effect-marquee, #siteSubtitle.effect-marquee, #footerText.effect-marquee {
             display: inline-block;
             white-space: nowrap;
             overflow: hidden;
@@ -135,7 +136,7 @@
             0% { transform: translateX(100%); }
             100% { transform: translateX(-100%); }
         }
-        .effect-typing {
+        #siteTitle.effect-typing, #siteSubtitle.effect-typing, #footerText.effect-typing {
             overflow: hidden;
             white-space: nowrap;
             border-right: 2px solid currentColor;
@@ -150,21 +151,21 @@
         @keyframes blinkCursor {
             50% { border-color: transparent; }
         }
-        .effect-fade {
+        #siteTitle.effect-fade, #siteSubtitle.effect-fade, #footerText.effect-fade {
             animation: fadeAnim 3s ease-in-out infinite;
         }
         @keyframes fadeAnim {
             0%, 100% { opacity: 0.3; }
             50% { opacity: 1; }
         }
-        .effect-blink {
+        #siteTitle.effect-blink, #siteSubtitle.effect-blink, #footerText.effect-blink {
             animation: blinkAnim 1.2s step-end infinite;
         }
         @keyframes blinkAnim {
             0%, 100% { opacity: 1; }
             50% { opacity: 0; }
         }
-        .effect-neon {
+        #siteTitle.effect-neon, #siteSubtitle.effect-neon, #footerText.effect-neon {
             text-shadow:
                 0 0 5px currentColor,
                 0 0 10px currentColor,
@@ -178,6 +179,26 @@
             to { text-shadow: 0 0 10px currentColor, 0 0 20px currentColor, 0 0 40px currentColor, 0 0 80px currentColor; }
         }
 
+        /* 新增特效 */
+        @keyframes fadeEffect { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+        @keyframes pulse { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:0.7;transform:scale(1.05);} }
+        @keyframes shake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-8px);} 75%{transform:translateX(8px);} }
+        @keyframes bounce { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-20px);} }
+        @keyframes heartbeat { 0%,100%{transform:scale(1);} 50%{transform:scale(1.15);} }
+        @keyframes rotate3d { 0%{transform:rotateY(0deg);} 50%{transform:rotateY(180deg);} 100%{transform:rotateY(360deg);} }
+        @keyframes glow { 0%,100%{box-shadow:0 0 5px #667eea;} 50%{box-shadow:0 0 30px #667eea,0 0 60px #667eea;} }
+        @keyframes inkblot { 0%,100%{filter:blur(0px);opacity:1;} 50%{filter:blur(3px);opacity:0.6;} }
+        @keyframes typing { from { width: 0; } to { width: 100%; } }
+        @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+        @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
+        #siteTitle.effect-pulse, #siteSubtitle.effect-pulse, #footerText.effect-pulse { animation: pulse 2s ease-in-out infinite; }
+        #siteTitle.effect-shake, #siteSubtitle.effect-shake, #footerText.effect-shake { display:inline-block; animation: shake 0.5s ease-in-out infinite; }
+        #siteTitle.effect-bounce, #siteSubtitle.effect-bounce, #footerText.effect-bounce { display:inline-block; animation: bounce 1s ease infinite; }
+        #siteTitle.effect-heartbeat, #siteSubtitle.effect-heartbeat, #footerText.effect-heartbeat { display:inline-block; animation: heartbeat 1.5s ease-in-out infinite; }
+        #siteTitle.effect-rotate3d, #siteSubtitle.effect-rotate3d, #footerText.effect-rotate3d { display:inline-block; animation: rotate3d 2s ease-in-out infinite; }
+        #siteTitle.effect-glow, #siteSubtitle.effect-glow, #footerText.effect-glow { animation: glow 2s ease-in-out infinite; }
+        #siteTitle.effect-inkblot, #siteSubtitle.effect-inkblot, #footerText.effect-inkblot { filter: blur(2px); animation: inkblot 3s ease-in-out infinite; }
+
         /* ===== Logo 区域 ===== */
         .logo-area {
             display: flex;
@@ -190,7 +211,7 @@
             flex-direction: column;
             gap: 8px;
         }
-        .logo-area .logo-img { max-width: 120px; max-height: 120px; border-radius: 16px; }
+        .logo-area .logo-img { max-width: 500px; max-height: 500px; border-radius: 16px; }
         .logo-area .logo-text {
             font-size: 48px;
             font-weight: 700;
@@ -271,6 +292,34 @@ async function loadAll() {
                 }).catch(e => {});
             }
         }
+        // 迁移：为搜索引擎添加 order 字段
+        if (data && data.searchEngines) {
+            let needsSave = false;
+            data.searchEngines.forEach((e, idx) => {
+                if (e.order === undefined) { e.order = idx + 1; needsSave = true; }
+            });
+            if (needsSave) {
+                fetch(API + '/data', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                }).catch(e => {});
+            }
+        }
+        // 迁移：为快捷链接添加 order 字段
+        if (data && data.quickLinks) {
+            let needsSave = false;
+            data.quickLinks.forEach((l, idx) => {
+                if (l.order === undefined) { l.order = idx + 1; needsSave = true; }
+            });
+            if (needsSave) {
+                fetch(API + '/data', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                }).catch(e => {});
+            }
+        }
         applyConfig();
         // 初始应用保存的布局偏好（body类 + 按钮高亮，但不重复 render）
         currentLayout = localStorage.getItem('navLayout') || 'card';
@@ -284,8 +333,51 @@ async function loadAll() {
     }
 }
 
+// ===== 字体加载工具 =====
+const FONT_LOADED = new Set();
+
+function loadGoogleFont(fontName) {
+    if (!fontName || FONT_LOADED.has(fontName)) return;
+    // 系统内置字体无需加载
+    const systemFonts = ['PingFang SC', 'Microsoft YaHei', 'Georgia', 'Times New Roman', 'Arial', 'Helvetica', 'Verdana', 'Trebuchet MS', 'Courier New', 'Impact', 'Comic Sans MS', 'Palatino Linotype'];
+    if (systemFonts.includes(fontName)) { FONT_LOADED.add(fontName); return; }
+
+    const googleMap = {
+        'Noto Sans SC': 'Noto+Sans+SC:wght@400;700',
+        'Noto Serif SC': 'Noto+Serif+SC:wght@400;700',
+        'ZCOOL XiaoWei': 'ZCOOL+XiaoWei',
+        'Ma Shan Zheng': 'Ma+Shan+Zheng',
+        'Liu Jian Mao Cao': 'Liu+Jian+Mao+Cao',
+        'ZCOOL QingKe HuangYou': 'ZCOOL+QingKe+HuangYou',
+        'Long Cang': 'Long+Cang',
+        'ZCOOL KuaiLe': 'ZCOOL+KuaiLe',
+        'LXGW WenKai': 'LXGW+WenKai'
+    };
+    const gf = googleMap[fontName];
+    if (!gf) { FONT_LOADED.add(fontName); return; }
+    FONT_LOADED.add(fontName);
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'https://fonts.googleapis.com/css2?family=' + gf + '&display=swap';
+    document.head.appendChild(link);
+}
+
+// 字体名 → 中文标注/显示用
+const FONT_LABELS = {};
+
+function ensureFontsLoaded(config) {
+    if (!config) return;
+    ['site_title_font', 'site_subtitle_font', 'site_footer_font', 'logo_text_font'].forEach(key => {
+        const font = config[key];
+        if (font && font !== 'none') loadGoogleFont(font);
+    });
+}
+
 function applyConfig() {
     if (!config) return;
+
+    // 确保所有字体已加载
+    ensureFontsLoaded(config);
 
     // 背景
     const body = document.body;
@@ -344,6 +436,13 @@ function applyTextStyle(el, config, prefix) {
     if (effect && effect !== 'none') {
         el.classList.add('effect-' + effect);
     }
+    // 有效果时移除渐变（否则动画可能看不到）
+    if (effect && effect !== 'none') {
+        el.style.background = 'none';
+        el.style.webkitTextFillColor = 'unset';
+        el.style.backgroundClip = 'unset';
+        el.style.webkitBackgroundClip = 'unset';
+    }
 }
 
 function render() {
@@ -361,51 +460,123 @@ function render() {
         logoArea.classList.add('vertical');
     }
 
-    if (config?.logo_type === 'image' && config?.site_logo) {
-        // 图片模式
+    const logoMode = config?.logo_mode || 'logo_text';
+    const logoW = config?.logo_width_pct || 50;
+    const logoH = config?.logo_height_pct || 50;
+    const scaleMode = config?.logo_scale_mode;
+    // scaleMode: true=等比例, false=自由缩放
+    const isAspectLock = scaleMode === true || scaleMode === 'aspect_keep' || scaleMode === undefined || scaleMode === null;
+
+    if (logoMode === 'logo_image' && config?.site_logo) {
+        // 图片Logo模式
         logoImg.src = config.site_logo;
         logoImg.style.display = 'inline';
-        logoImg.style.objectFit = config.logo_fit || 'contain';
+        // 使用百分比计算实际尺寸
+        logoImg.style.maxWidth = logoW + '%';
+        logoImg.style.width = '';
+        if (isAspectLock) {
+            logoImg.style.height = 'auto';
+        } else {
+            logoImg.style.height = logoH + '%';
+            logoImg.style.objectFit = 'contain';
+        }
+        logoImg.style.objectPosition = 'center';
+        // 旋转
+        if (config?.logo_rotate) {
+            logoImg.style.transform = 'rotate(' + config.logo_rotate + 'deg)';
+        } else {
+            logoImg.style.transform = '';
+        }
+        // Logo 透明度
+        if (config?.logo_opacity !== undefined && config.logo_opacity !== null) {
+            logoImg.style.opacity = config.logo_opacity;
+        }
+        // Logo 特效（只对image有效果类适用）
+        if (config?.logo_image_effect && config.logo_image_effect !== 'none') {
+            logoImg.classList.add('effect-' + config.logo_image_effect);
+        }
         siteTitleEl.style.display = 'none';
-    } else if (config?.logo_type === 'text' && config?.logo_text) {
-        // 文字Logo模式
+    } else if (logoMode === 'logo_text' && config?.logo_text) {
+        // 文字Logo模式（保留旧兼容）
         logoImg.style.display = 'none';
         siteTitleEl.style.display = 'block';
         siteTitleEl.textContent = config.logo_text;
+        siteTitleEl.style.fontSize = '48px';
         applyTextStyle(siteTitleEl, config, 'logo_text');
-        // 移除渐变色（文字Logo不应有渐变）
         siteTitleEl.style.background = 'none';
         siteTitleEl.style.webkitTextFillColor = 'unset';
         siteTitleEl.style.backgroundClip = 'unset';
         siteTitleEl.style.webkitBackgroundClip = 'unset';
     } else {
-        // 默认：文字标题
+        // 默认：文字标题（用site_title字段 + 样式）
         logoImg.style.display = 'none';
         siteTitleEl.style.display = 'block';
         siteTitleEl.textContent = config?.site_title || data.site.title;
-        // 标题渐变恢复
-        siteTitleEl.style.background = 'linear-gradient(90deg, #667eea, #764ba2, #f093fb)';
-        siteTitleEl.style.webkitBackgroundClip = 'text';
-        siteTitleEl.style.webkitTextFillColor = 'transparent';
-        siteTitleEl.style.backgroundClip = 'text';
-        siteTitleEl.style.fontSize = '';
-        siteTitleEl.style.fontFamily = '';
-        siteTitleEl.style.opacity = '';
-    }
-
-    // ---- 标题样式（非文字Logo模式时） ----
-    if (config?.logo_type !== 'text' || !config?.logo_text) {
-        applyTextStyle(siteTitleEl, config, 'site_title');
-        // 如果设置了特效但非文字Logo模式，保留渐变标题
-        if (!(config?.logo_type === 'text' && config?.logo_text)) {
-            const effect = config?.site_title_effect;
-            if (!effect || effect === 'none') {
+        
+        // 判断用户是否自定义了样式（字体、颜色、特效）
+        const hasCustomFont = !!config?.site_title_font;
+        const hasCustomColor = !!config?.site_title_color;
+        const hasCustomEffect = config?.site_title_effect && config.site_title_effect !== 'none';
+        const hasCustomStyle = hasCustomFont || hasCustomColor || hasCustomEffect;
+        
+        if (hasCustomStyle) {
+            // 先重置所有渐变相关，让applyTextStyle从干净状态开始
+            siteTitleEl.style.background = '';
+            siteTitleEl.style.webkitBackgroundClip = '';
+            siteTitleEl.style.webkitTextFillColor = '';
+            siteTitleEl.style.backgroundClip = '';
+            siteTitleEl.style.fontSize = '';
+            siteTitleEl.style.fontFamily = '';
+            siteTitleEl.style.opacity = '';
+            
+            if (hasCustomEffect) {
+                // 有效果时不使用渐变（避免动画被覆盖）
+                applyTextStyle(siteTitleEl, config, 'site_title');
+                siteTitleEl.style.background = 'none';
+                siteTitleEl.style.webkitTextFillColor = 'unset';
+            } else if (hasCustomColor && !hasCustomFont) {
+                // 只有颜色：纯色显示
+                applyTextStyle(siteTitleEl, config, 'site_title');
+                siteTitleEl.style.background = 'none';
+                siteTitleEl.style.webkitTextFillColor = 'unset';
+                siteTitleEl.style.backgroundClip = 'unset';
+                siteTitleEl.style.webkitBackgroundClip = 'unset';
+            } else if (hasCustomFont && !hasCustomColor && !hasCustomEffect) {
+                // 只选了字体：保留渐变色 + 应用字体
+                applyTextStyle(siteTitleEl, config, 'site_title');
+                // 重新覆盖颜色为渐变（保留字体设置）
                 siteTitleEl.style.background = 'linear-gradient(90deg, #667eea, #764ba2, #f093fb)';
                 siteTitleEl.style.webkitBackgroundClip = 'text';
                 siteTitleEl.style.webkitTextFillColor = 'transparent';
                 siteTitleEl.style.backgroundClip = 'text';
+            } else {
+                // 字体+颜色，或只有颜色：纯色显示
+                applyTextStyle(siteTitleEl, config, 'site_title');
+                siteTitleEl.style.background = 'none';
+                siteTitleEl.style.webkitTextFillColor = 'unset';
+                siteTitleEl.style.backgroundClip = 'unset';
+                siteTitleEl.style.webkitBackgroundClip = 'unset';
             }
+        } else {
+            // 无自定义样式：使用默认渐变
+            siteTitleEl.style.background = 'linear-gradient(90deg, #667eea, #764ba2, #f093fb)';
+            siteTitleEl.style.webkitBackgroundClip = 'text';
+            siteTitleEl.style.webkitTextFillColor = 'transparent';
+            siteTitleEl.style.backgroundClip = 'text';
+            siteTitleEl.style.fontSize = '';
+            siteTitleEl.style.fontFamily = '';
+            siteTitleEl.style.opacity = '';
+            applyTextStyle(siteTitleEl, config, 'site_title');
         }
+    }
+
+    // ---- 标题样式（文字标题模式时应用site_title样式） ----
+    if (logoMode === 'logo_text' && config?.logo_text) {
+        // 文字Logo已应用 logo_text 样式，不做额外处理
+    } else {
+        // 使用site_title样式 - 文字标题模式
+        // 注意：上面的hasCustomStyle已做了完整处理，此处不再重复覆盖
+        // 只对无特效的情况补充未处理的逻辑
     }
 
     // ---- 副标题 ----
@@ -419,14 +590,18 @@ function render() {
     applyTextStyle(footerTextEl, config, 'site_footer');
     document.getElementById('footerICP').textContent = config?.site_icp || '';
 
-    // 搜索引擎
+    // 搜索引擎 - 按 order 排序
+    const sortedEngines = [...data.searchEngines]
+        .sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
     const sel = document.getElementById('searchEngine');
-    sel.innerHTML = data.searchEngines.map((e, i) =>
+    sel.innerHTML = sortedEngines.map((e, i) =>
         `<option value="${e.url}" ${i===1?'selected':''}>${e.name}</option>`
     ).join('');
 
-    // 快捷链接
-    document.getElementById('quickLinks').innerHTML = data.quickLinks.map(l =>
+    // 快捷链接 - 按 order 排序
+    const sortedQLinks = [...data.quickLinks]
+        .sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
+    document.getElementById('quickLinks').innerHTML = sortedQLinks.map(l =>
         `<a href="${l.url}" target="_blank"><img src="${l.icon}" onerror="this.style.display='none'" loading="lazy"><span>${l.name}</span></a>`
     ).join('');
 

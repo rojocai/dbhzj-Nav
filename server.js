@@ -182,6 +182,109 @@ function getTokenFromReq(req) {
     return cookies.nav_token || (authHeader && authHeader.replace('Bearer ', ''));
 }
 
+// ===== 访问统计 =====
+const STATS_FILE = path.join(__dirname, 'stats.json');
+
+function readStats() {
+    try {
+        if (!fs.existsSync(STATS_FILE)) {
+            const def = { total_visits: 0, today_visits: 0, last_date: '', visitors: [] };
+            writeStats(def);
+            return def;
+        }
+        return JSON.parse(fs.readFileSync(STATS_FILE, 'utf-8'));
+    } catch { return { total_visits: 0, today_visits: 0, last_date: '', visitors: [] }; }
+}
+
+function writeStats(data) {
+    fs.writeFileSync(STATS_FILE, JSON.stringify(data, null, 2), 'utf-8');
+}
+
+function getToday() {
+    return new Date().toISOString().split('T')[0];
+}
+
+function recordVisit(ip, ua) {
+    const stats = readStats();
+    const today = getToday();
+    stats.total_visits++;
+    if (stats.last_date !== today) {
+        stats.today_visits = 1;
+        stats.last_date = today;
+    } else {
+        stats.today_visits++;
+    }
+    // 记录最近30个访客
+    stats.visitors.unshift({
+        ip, ua: (ua || '').substring(0, 120),
+        time: new Date().toISOString()
+    });
+    if (stats.visitors.length > 30) stats.visitors.length = 30;
+    writeStats(stats);
+}
+
+// ===== IP地理位置查询（通过 ip-api.com，免费，无key）=====
+const https = require('https');
+
+function queryGeoIP(ip) {
+    return new Promise((resolve) => {
+        // 内网IP不查询
+        if (ip === '127.0.0.1' || ip === '::1' || ip === 'localhost' || ip.startsWith('192.168.') || ip.startsWith('10.') || ip.startsWith('172.16.') || ip.startsWith('172.17.') || ip.startsWith('172.18.') || ip.startsWith('172.19.') || ip.startsWith('172.20.') || ip.startsWith('172.21.') || ip.startsWith('172.22.') || ip.startsWith('172.23.') || ip.startsWith('172.24.') || ip.startsWith('172.25.') || ip.startsWith('172.26.') || ip.startsWith('172.27.') || ip.startsWith('172.28.') || ip.startsWith('172.29.') || ip.startsWith('172.30.') || ip.startsWith('172.31.')) {
+            resolve({ country: '内网', region: '', city: '' });
+            return;
+        }
+        const req = https.get(`http://ip-api.com/json/${ip}?lang=zh-CN`, { timeout: 3000 }, (res) => {
+            let data = '';
+            res.on('data', chunk => data += chunk);
+            res.on('end', () => {
+                try {
+                    const json = JSON.parse(data);
+                    if (json.status === 'success') {
+                        resolve({ country: json.country, region: json.regionName, city: json.city, isp: json.isp, org: json.org, lat: json.lat, lon: json.lon });
+                    } else {
+                        resolve({ country: '未知', region: '', city: '' });
+                    }
+                } catch { resolve({ country: '未知', region: '', city: '' }); }
+            });
+        });
+        req.on('error', () => resolve({ country: '未知', region: '', city: '' }));
+        req.on('timeout', () => { req.destroy(); resolve({ country: '未知', region: '', city: '' }); });
+    });
+}
+
+function getClientIP(req) {
+    const xForwarded = req.headers['x-forwarded-for'];
+    if (xForwarded) return xForwarded.split(',')[0].trim();
+    const xReal = req.headers['x-real-ip'];
+    if (xReal) return xReal.trim();
+    const ip = req.socket.remoteAddress || req.connection?.remoteAddress || '未知';
+    if (ip === '::1' || ip === '::ffff:127.0.0.1') return '127.0.0.1';
+    if (ip.startsWith('::ffff:')) return ip.substring(7);
+    return ip;
+}
+
+// ===== 系统信息 =====
+const os = require('os');
+
+function getSystemInfo() {
+    const cpus = os.cpus();
+    const totalMem = os.totalmem();
+    const freeMem = os.freemem();
+    const usedMem = totalMem - freeMem;
+    return {
+        hostname: os.hostname(),
+        platform: os.platform(),
+        arch: os.arch(),
+        uptime: Math.floor(os.uptime()),
+        cpu_model: cpus.length > 0 ? cpus[0].model.trim() : '未知',
+        cpu_cores: cpus.length,
+        memory_total: (totalMem / 1024 / 1024 / 1024).toFixed(1) + 'GB',
+        memory_used: (usedMem / 1024 / 1024 / 1024).toFixed(1) + 'GB',
+        memory_free: (freeMem / 1024 / 1024 / 1024).toFixed(1) + 'GB',
+        loadavg: os.loadavg().map(v => v.toFixed(2))
+    };
+}
+
 // ===== 文件上传 =====
 function parseMultipart(req) {
     return new Promise((resolve, reject) => {
@@ -405,6 +508,41 @@ const server = http.createServer(async (req, res) => {
         } catch (e) {
             sendJSON(res, 400, { error: '上传失败: ' + e.message });
         }
+        return;
+    }
+
+    // ---- 访客统计 & 系统信息 API ----
+    if (pathname === '/api/visitor-info' && req.method === 'GET') {
+        (async () => {
+            const ip = getClientIP(req);
+            const stats = readStats();
+            const sysInfo = getSystemInfo();
+            const geo = await queryGeoIP(ip);
+            sendJSON(res, 200, {
+                stats: {
+                    total_visits: stats.total_visits,
+                    today_visits: stats.today_visits
+                },
+                visitor: {
+                    ip,
+                    country: geo.country,
+                    region: geo.region,
+                    city: geo.city,
+                    isp: geo.isp || '',
+                    org: geo.org || ''
+                },
+                system: sysInfo
+            });
+        })();
+        return;
+    }
+
+    // ---- 记录访问（首页加载时调用）----
+    if (pathname === '/api/visit' && req.method === 'GET') {
+        const ip = getClientIP(req);
+        const ua = req.headers['user-agent'] || '';
+        recordVisit(ip, ua);
+        sendJSON(res, 200, { success: true });
         return;
     }
 

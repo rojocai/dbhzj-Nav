@@ -139,6 +139,32 @@
             .logo-area .logo-text { font-size: 28px !important; }
             .loading { padding: 60px 0; font-size: 14px; }
         }
+
+        .visitor-info {
+            margin-top: 16px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            font-size: 12px;
+            color: #555;
+            line-height: 1.8;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 4px 16px;
+        }
+        .visitor-info .vi-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+        }
+        .visitor-info .vi-item .vi-label { color: #666; }
+        .visitor-info .vi-item .vi-value { color: #888; }
+
+        @media (max-width: 768px) {
+            .visitor-info { font-size: 11px; gap: 2px 10px; }
+            .visitor-info .vi-item { white-space: normal; }
+        }
     </style>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -276,6 +302,7 @@
                 <p id="footerICP"></p>
             </div>
             <p><a href="https://blog.dbhzj.top">东白湖之家</a> · <a href="https://blog.dbhzj.top">blog.dbhzj.top</a></p>
+            <div class="visitor-info" id="visitorInfo"></div>
         </div>
     </div>
 </div>
@@ -348,9 +375,45 @@ async function loadAll() {
             btn.classList.toggle('active', btn.dataset.layout === currentLayout);
         });
         render();
+        // 记录访问 + 加载访客信息（不阻塞主流程）
+        fetch(API + '/visit').catch(e => {});
+        loadVisitorInfo();
     } catch(e) {
         document.getElementById('loading').innerHTML = '❌ 加载数据失败，请稍后重试';
     }
+}
+
+// ===== 访客统计信息 =====
+async function loadVisitorInfo() {
+    try {
+        const res = await fetch(API + '/visitor-info');
+        const info = await res.json();
+        const vi = document.getElementById('visitorInfo');
+        if (!vi) return;
+        const loc = [info.visitor.country, info.visitor.region, info.visitor.city].filter(Boolean).join('·') || '未知';
+        const sysInfo = info.system;
+        const uptime = formatUptime(sysInfo.uptime);
+        const platform = sysInfo.platform === 'linux' ? 'Linux' : sysInfo.platform;
+        vi.innerHTML = `
+            <span class="vi-item"><span class="vi-label">👁️ 访问:</span><span class="vi-value">${info.stats.total_visits} 次</span></span>
+            <span class="vi-item"><span class="vi-label">📅 今日:</span><span class="vi-value">${info.stats.today_visits} 次</span></span>
+            <span class="vi-item"><span class="vi-label">📍 位置:</span><span class="vi-value">${loc}</span></span>
+            <span class="vi-item"><span class="vi-label">🔌 IP:</span><span class="vi-value">${info.visitor.ip}</span></span>
+            <span class="vi-item"><span class="vi-label">💻 系统:</span><span class="vi-value">${platform} ${sysInfo.arch}</span></span>
+            <span class="vi-item"><span class="vi-label">⏱️ 运行:</span><span class="vi-value">${uptime}</span></span>
+        `;
+    } catch(e) {
+        // 静默失败
+    }
+}
+
+function formatUptime(seconds) {
+    const d = Math.floor(seconds / 86400);
+    const h = Math.floor((seconds % 86400) / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    if (d > 0) return `${d}天${h}小时`;
+    if (h > 0) return `${h}时${m}分`;
+    return `${m}分钟`;
 }
 
 // ===== 字体加载工具 =====

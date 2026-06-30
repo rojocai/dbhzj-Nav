@@ -1,0 +1,12 @@
+{
+  "name": "dbhzj-nav",
+  "version": "1.0.1",
+  "description": "东白湖之家导航站 - 个人网址导航系统",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": ["navigation", "bookmarks", "dashboard"],
+  "license": "MIT"
+}

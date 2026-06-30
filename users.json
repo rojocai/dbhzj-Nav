@@ -1,0 +1,21 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "username": "admin",
+      "password": "7222cd5fdcd871b5de190d9c35ed8549a608c54cdf8264d21af6bfc68c45ced6",
+      "created_at": "2025-11-26T04:04:22.000Z",
+      "updated_at": "2026-06-30T04:37:01.680Z"
+    }
+  ],
+  "tokens": {
+    "8c953efd777a47adc60e18a9df63a3653b276445573dd5efb0982f921eaa6551": "admin",
+    "2206b3fd2ffdb8b94b51e79fdc4640acefb7baedef6d6bcaa3cdecf65c16e960": "admin",
+    "c39c3f0ac43e066bd82a0da89c5b1b15b5a308a51d815dbf0efca26e5fe2ca8d": "admin",
+    "ba30204fc9baa35b6c4b96281e7a03af88b26d65285dca6fe048c3af0a631420": "admin",
+    "2bdf45b8f71800356d91b01a3c68cb641f87f159a952922e7b54d527800ffdea": "admin",
+    "a5bc7211b52d9ed9f0c0825b86794d29562357b9f640a1d485a8e68cbe382037": "admin",
+    "b43e139d890a757df43433cb745b46693b86342e9d02ac718353d660fa633064": "admin",
+    "0b0b645ec1e22e160844409d11e98be5eff8f54cc4b76a4ecc212732e00bf1bb": "admin"
+  }
+}

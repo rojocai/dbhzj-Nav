@@ -1,0 +1,420 @@
+{
+  "site": {
+    "title": "东白湖之家",
+    "subtitle": "东白湖 · 上网从这里开始",
+    "footer": "🏠 东白湖之家 · 上网从这里开始"
+  },
+  "quickLinks": [
+    {
+      "name": "百度",
+      "url": "https://www.baidu.com",
+      "icon": "https://www.baidu.com/favicon.ico"
+    },
+    {
+      "name": "Google",
+      "url": "https://www.google.com",
+      "icon": "https://www.google.com/favicon.ico"
+    },
+    {
+      "name": "B站",
+      "url": "https://www.bilibili.com",
+      "icon": "https://www.bilibili.com/favicon.ico"
+    },
+    {
+      "name": "GitHub",
+      "url": "https://github.com",
+      "icon": "https://github.com/favicon.ico"
+    },
+    {
+      "name": "知乎",
+      "url": "https://zhihu.com",
+      "icon": "https://www.zhihu.com/favicon.ico"
+    },
+    {
+      "name": "抖音",
+      "url": "https://douyin.com",
+      "icon": "https://www.douyin.com/favicon.ico"
+    },
+    {
+      "name": "微博",
+      "url": "https://weibo.com",
+      "icon": "https://weibo.com/favicon.ico"
+    },
+    {
+      "name": "淘宝",
+      "url": "https://taobao.com",
+      "icon": "https://www.taobao.com/favicon.ico"
+    }
+  ],
+  "searchEngines": [
+    {
+      "name": "百度",
+      "url": "https://www.baidu.com/s?wd="
+    },
+    {
+      "name": "Google",
+      "url": "https://www.google.com/search?q="
+    },
+    {
+      "name": "Bing",
+      "url": "https://www.bing.com/search?q="
+    },
+    {
+      "name": "B站",
+      "url": "https://search.bilibili.com/all?keyword="
+    },
+    {
+      "name": "搜狗",
+      "url": "https://www.sogou.com/web?query="
+    },
+    {
+      "name": "DuckDuckGo",
+      "url": "https://duckduckgo.com/?q="
+    }
+  ],
+  "categories": [
+    {
+      "icon": "💪",
+      "name": "社交媒体",
+      "sites": [
+        {
+          "name": "Reddit",
+          "url": "https://www.reddit.com",
+          "icon": "https://www.reddit.com/favicon.ico",
+          "order": 1
+        },
+        {
+          "name": "知乎",
+          "url": "https://zhihu.com",
+          "icon": "https://www.zhihu.com/favicon.ico",
+          "order": 2
+        },
+        {
+          "name": "百度贴吧",
+          "url": "https://tieba.baidu.com",
+          "icon": "https://tieba.baidu.com/favicon.ico",
+          "order": 3
+        },
+        {
+          "name": "抖音",
+          "url": "https://douyin.com",
+          "icon": "https://www.douyin.com/favicon.ico",
+          "order": 4
+        },
+        {
+          "name": "小红书",
+          "url": "https://www.xiaohongshu.com",
+          "icon": "https://www.xiaohongshu.com/favicon.ico",
+          "order": 5
+        },
+        {
+          "name": "微博",
+          "url": "https://weibo.com",
+          "icon": "https://weibo.com/favicon.ico",
+          "order": 6
+        },
+        {
+          "name": "Twitter/X",
+          "url": "https://x.com",
+          "icon": "https://x.com/favicon.ico",
+          "order": 7
+        },
+        {
+          "name": "快手",
+          "url": "https://www.kuaishou.com",
+          "icon": "https://www.kuaishou.com/favicon.ico",
+          "order": 8
+        }
+      ],
+      "catOrder": 1
+    },
+    {
+      "icon": "🎬",
+      "name": "视频娱乐",
+      "sites": [
+        {
+          "name": "Bilibili",
+          "url": "https://www.bilibili.com",
+          "icon": "https://www.bilibili.com/favicon.ico",
+          "order": 1
+        },
+        {
+          "name": "YouTube",
+          "url": "https://www.youtube.com",
+          "icon": "https://www.youtube.com/favicon.ico",
+          "order": 2
+        },
+        {
+          "name": "Netflix",
+          "url": "https://www.netflix.com",
+          "icon": "https://www.netflix.com/favicon.ico",
+          "order": 3
+        },
+        {
+          "name": "爱奇艺",
+          "url": "https://www.iqiyi.com",
+          "icon": "https://www.iqiyi.com/favicon.ico",
+          "order": 4
+        },
+        {
+          "name": "腾讯视频",
+          "url": "https://v.qq.com",
+          "icon": "https://v.qq.com/favicon.ico",
+          "order": 5
+        },
+        {
+          "name": "优酷",
+          "url": "https://www.youku.com",
+          "icon": "https://www.youku.com/favicon.ico",
+          "order": 6
+        },
+        {
+          "name": "斗鱼",
+          "url": "https://www.douyu.com",
+          "icon": "https://www.douyu.com/favicon.ico",
+          "order": 7
+        },
+        {
+          "name": "虎牙",
+          "url": "https://www.huya.com",
+          "icon": "https://www.huya.com/favicon.ico",
+          "order": 8
+        }
+      ],
+      "catOrder": 2
+    },
+    {
+      "icon": "💻",
+      "name": "开发技术",
+      "sites": [
+        {
+          "name": "PyPI",
+          "url": "https://pypi.org",
+          "icon": "https://pypi.org/favicon.ico",
+          "order": 1
+        },
+        {
+          "name": "Stack Overflow",
+          "url": "https://stackoverflow.com",
+          "icon": "https://stackoverflow.com/favicon.ico",
+          "order": 2
+        },
+        {
+          "name": "GitHub",
+          "url": "https://github.com",
+          "icon": "https://github.com/favicon.ico",
+          "order": 3
+        },
+        {
+          "name": "MDN",
+          "url": "https://developer.mozilla.org",
+          "icon": "https://developer.mozilla.org/favicon.ico",
+          "order": 4
+        },
+        {
+          "name": "npm",
+          "url": "https://www.npmjs.com",
+          "icon": "https://www.npmjs.com/favicon.ico",
+          "order": 5
+        },
+        {
+          "name": "Docker",
+          "url": "https://www.docker.com",
+          "icon": "https://www.docker.com/favicon.ico",
+          "order": 6
+        },
+        {
+          "name": "Vercel",
+          "url": "https://vercel.com",
+          "icon": "https://vercel.com/favicon.ico",
+          "order": 7
+        },
+        {
+          "name": "Google Cloud",
+          "url": "https://cloud.google.com",
+          "icon": "https://cloud.google.com/favicon.ico",
+          "order": 8
+        }
+      ],
+      "catOrder": 3
+    },
+    {
+      "icon": "🛒",
+      "name": "购物生活",
+      "sites": [
+        {
+          "name": "淘宝",
+          "url": "https://www.taobao.com",
+          "icon": "https://www.taobao.com/favicon.ico",
+          "order": 1
+        },
+        {
+          "name": "京东",
+          "url": "https://www.jd.com",
+          "icon": "https://www.jd.com/favicon.ico",
+          "order": 2
+        },
+        {
+          "name": "拼多多",
+          "url": "https://www.pinduoduo.com",
+          "icon": "https://www.pinduoduo.com/favicon.ico",
+          "order": 3
+        },
+        {
+          "name": "抖音商城",
+          "url": "https://www.douyin.com/shop",
+          "icon": "https://www.douyin.com/favicon.ico",
+          "order": 4
+        },
+        {
+          "name": "小米有品",
+          "url": "https://www.xiaomiyoupin.com",
+          "icon": "https://www.xiaomiyoupin.com/favicon.ico",
+          "order": 5
+        },
+        {
+          "name": "什么值得买",
+          "url": "https://www.smzdm.com",
+          "icon": "https://www.smzdm.com/favicon.ico",
+          "order": 6
+        },
+        {
+          "name": "12306",
+          "url": "https://www.12306.cn",
+          "icon": "https://www.12306.cn/favicon.ico",
+          "order": 7
+        },
+        {
+          "name": "美团",
+          "url": "https://www.meituan.com",
+          "icon": "https://www.meituan.com/favicon.ico",
+          "order": 8
+        }
+      ],
+      "catOrder": 4
+    },
+    {
+      "icon": "🔧",
+      "name": "在线工具",
+      "sites": [
+        {
+          "name": "百度网盘",
+          "url": "https://pan.baidu.com",
+          "icon": "https://pan.baidu.com/favicon.ico",
+          "order": 1
+        },
+        {
+          "name": "阿里云盘",
+          "url": "https://www.aliyundrive.com",
+          "icon": "https://www.aliyundrive.com/favicon.ico",
+          "order": 2
+        },
+        {
+          "name": "iCloud",
+          "url": "https://www.icloud.com",
+          "icon": "https://www.icloud.com/favicon.ico",
+          "order": 3
+        },
+        {
+          "name": "TinyPNG",
+          "url": "https://tinypng.com",
+          "icon": "https://tinypng.com/favicon.ico",
+          "order": 4
+        },
+        {
+          "name": "RemoveBG",
+          "url": "https://www.remove.bg",
+          "icon": "https://www.remove.bg/favicon.ico",
+          "order": 5
+        },
+        {
+          "name": "Excalidraw",
+          "url": "https://excalidraw.com",
+          "icon": "https://excalidraw.com/favicon.ico",
+          "order": 6
+        },
+        {
+          "name": "ProcessOn",
+          "url": "https://www.processon.com",
+          "icon": "https://www.processon.com/favicon.ico",
+          "order": 7
+        },
+        {
+          "name": "菜鸟工具",
+          "url": "https://c.runoob.com",
+          "icon": "https://c.runoob.com/favicon.ico",
+          "order": 8
+        }
+      ],
+      "catOrder": 5
+    },
+    {
+      "icon": "📰",
+      "name": "信息资讯",
+      "sites": [
+        {
+          "name": "36氪",
+          "url": "https://www.36kr.com",
+          "icon": "https://www.36kr.com/favicon.ico",
+          "order": 1
+        },
+        {
+          "name": "虎嗅",
+          "url": "https://www.huxiu.com",
+          "icon": "https://www.huxiu.com/favicon.ico",
+          "order": 2
+        },
+        {
+          "name": "少数派",
+          "url": "https://sspai.com",
+          "icon": "https://sspai.com/favicon.ico",
+          "order": 3
+        },
+        {
+          "name": "Hacker News",
+          "url": "https://news.ycombinator.com",
+          "icon": "https://news.ycombinator.com/favicon.ico",
+          "order": 4
+        },
+        {
+          "name": "Product Hunt",
+          "url": "https://producthunt.com",
+          "icon": "https://producthunt.com/favicon.ico",
+          "order": 5
+        },
+        {
+          "name": "V2EX",
+          "url": "https://v2ex.com",
+          "icon": "https://v2ex.com/favicon.ico",
+          "order": 6
+        }
+      ],
+      "catOrder": 6
+    },
+    {
+      "icon": "✈️",
+      "name": "VPS",
+      "sites": [],
+      "catOrder": 7
+    },
+    {
+      "icon": "🤖",
+      "name": "AI 工具",
+      "sites": [
+        {
+          "name": "ChatGPT",
+          "url": "https://chatgpt.com",
+          "icon": "https://chatgpt.com/favicon.ico",
+          "order": 1
+        },
+        {
+          "name": "Claude",
+          "url": "https://claude.ai",
+          "icon": "https://claude.ai/favicon.ico",
+          "order": 2
+        }
+      ],
+      "catOrder": 8
+    }
+  ]
+}

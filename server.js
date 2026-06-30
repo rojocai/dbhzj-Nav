@@ -224,31 +224,37 @@ function recordVisit(ip, ua) {
 }
 
 // ===== IP地理位置查询（通过 ip-api.com，免费，无key）=====
-const https = require('https');
+const http2 = require('http');
 
 function queryGeoIP(ip) {
     return new Promise((resolve) => {
+        let done = false;
+        const finish = (result) => { if (!done) { done = true; resolve(result); } };
         // 内网IP不查询
         if (ip === '127.0.0.1' || ip === '::1' || ip === 'localhost' || ip.startsWith('192.168.') || ip.startsWith('10.') || ip.startsWith('172.16.') || ip.startsWith('172.17.') || ip.startsWith('172.18.') || ip.startsWith('172.19.') || ip.startsWith('172.20.') || ip.startsWith('172.21.') || ip.startsWith('172.22.') || ip.startsWith('172.23.') || ip.startsWith('172.24.') || ip.startsWith('172.25.') || ip.startsWith('172.26.') || ip.startsWith('172.27.') || ip.startsWith('172.28.') || ip.startsWith('172.29.') || ip.startsWith('172.30.') || ip.startsWith('172.31.')) {
-            resolve({ country: '内网', region: '', city: '' });
+            finish({ country: '内网', region: '', city: '' });
             return;
         }
-        const req = https.get(`http://ip-api.com/json/${ip}?lang=zh-CN`, { timeout: 3000 }, (res) => {
-            let data = '';
-            res.on('data', chunk => data += chunk);
-            res.on('end', () => {
-                try {
-                    const json = JSON.parse(data);
-                    if (json.status === 'success') {
-                        resolve({ country: json.country, region: json.regionName, city: json.city, isp: json.isp, org: json.org, lat: json.lat, lon: json.lon });
-                    } else {
-                        resolve({ country: '未知', region: '', city: '' });
-                    }
-                } catch { resolve({ country: '未知', region: '', city: '' }); }
+        try {
+            const req = http2.get(`http://ip-api.com/json/${ip}?lang=zh-CN`, (res) => {
+                let data = '';
+                res.on('data', chunk => data += chunk);
+                res.on('error', () => finish({ country: '未知', region: '', city: '' }));
+                res.on('end', () => {
+                    try {
+                        const json = JSON.parse(data);
+                        if (json.status === 'success') {
+                            finish({ country: json.country, region: json.regionName, city: json.city, isp: json.isp || '', org: json.org || '', lat: json.lat, lon: json.lon });
+                        } else {
+                            finish({ country: '未知', region: '', city: '' });
+                        }
+                    } catch { finish({ country: '未知', region: '', city: '' }); }
+                });
             });
-        });
-        req.on('error', () => resolve({ country: '未知', region: '', city: '' }));
-        req.on('timeout', () => { req.destroy(); resolve({ country: '未知', region: '', city: '' }); });
+            req.on('error', () => finish({ country: '未知', region: '', city: '' }));
+            req.setTimeout(3000, () => { req.destroy(); finish({ country: '超时', region: '', city: '' }); });
+            req.end();
+        } catch { finish({ country: '未知', region: '', city: '' }); }
     });
 }
 
@@ -267,22 +273,24 @@ function getClientIP(req) {
 const os = require('os');
 
 function getSystemInfo() {
-    const cpus = os.cpus();
-    const totalMem = os.totalmem();
-    const freeMem = os.freemem();
-    const usedMem = totalMem - freeMem;
-    return {
-        hostname: os.hostname(),
-        platform: os.platform(),
-        arch: os.arch(),
-        uptime: Math.floor(os.uptime()),
-        cpu_model: cpus.length > 0 ? cpus[0].model.trim() : '未知',
-        cpu_cores: cpus.length,
-        memory_total: (totalMem / 1024 / 1024 / 1024).toFixed(1) + 'GB',
-        memory_used: (usedMem / 1024 / 1024 / 1024).toFixed(1) + 'GB',
-        memory_free: (freeMem / 1024 / 1024 / 1024).toFixed(1) + 'GB',
-        loadavg: os.loadavg().map(v => v.toFixed(2))
-    };
+    try {
+        const cpus = os.cpus() || [];
+        const totalMem = os.totalmem() || 0;
+        const freeMem = os.freemem() || 0;
+        const usedMem = totalMem - freeMem;
+        return {
+            hostname: os.hostname(),
+            platform: os.platform(),
+            arch: os.arch(),
+            uptime: Math.floor(os.uptime()),
+            cpu_model: cpus.length > 0 ? (cpus[0].model || '').trim() : '未知',
+            cpu_cores: cpus.length,
+            memory_total: (totalMem / 1024 / 1024 / 1024).toFixed(1) + 'GB',
+            memory_used: (usedMem / 1024 / 1024 / 1024).toFixed(1) + 'GB',
+            memory_free: (freeMem / 1024 / 1024 / 1024).toFixed(1) + 'GB',
+            loadavg: (os.loadavg() || []).map(v => v.toFixed(2))
+        };
+    } catch { return { hostname: 'unknown', platform: 'linux', arch: 'x64', uptime: 0, cpu_model: '未知', cpu_cores: 0, memory_total: '0GB', memory_used: '0GB', memory_free: '0GB', loadavg: ['0'] }; }
 }
 
 // ===== 文件上传 =====
@@ -569,8 +577,18 @@ const server = http.createServer(async (req, res) => {
     }
 
     sendJSON(res, 404, { error: 'Not found' });
+}).on('error', (err) => {
+    console.error('Server error:', err.message);
 });
 
 server.listen(PORT, '0.0.0.0', () => {
     console.log(`API server running on http://0.0.0.0:${PORT}`);
+});
+
+// 全局异常捕获 — 防止单次请求crash整个进程
+process.on('uncaughtException', (err) => {
+    console.error('Uncaught Exception:', err.message);
+});
+process.on('unhandledRejection', (reason) => {
+    console.error('Unhandled Rejection:', reason);
 });

@@ -89,7 +89,8 @@ function readConfig() {
                 bg_color: '#0f0c29',
                 bg_gradient: 'linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)',
                 card_opacity: 0.03,
-                accent_color: '#667eea'
+                accent_color: '#667eea',
+                visitor_enabled: true
             };
             writeConfig(def);
             return def;
@@ -522,6 +523,12 @@ const server = http.createServer(async (req, res) => {
     // ---- 访客统计 & 系统信息 API ----
     if (pathname === '/api/visitor-info' && req.method === 'GET') {
         (async () => {
+            const config = readConfig();
+            const enabled = config.visitor_enabled !== false;
+            if (!enabled) {
+                sendJSON(res, 200, { stats: { total_visits: 0, today_visits: 0 }, visitor: {}, system: {} });
+                return;
+            }
             const ip = getClientIP(req);
             const stats = readStats();
             const sysInfo = getSystemInfo();
@@ -547,9 +554,12 @@ const server = http.createServer(async (req, res) => {
 
     // ---- 记录访问（首页加载时调用）----
     if (pathname === '/api/visit' && req.method === 'GET') {
-        const ip = getClientIP(req);
-        const ua = req.headers['user-agent'] || '';
-        recordVisit(ip, ua);
+        const config = readConfig();
+        if (config.visitor_enabled !== false) {
+            const ip = getClientIP(req);
+            const ua = req.headers['user-agent'] || '';
+            recordVisit(ip, ua);
+        }
         sendJSON(res, 200, { success: true });
         return;
     }

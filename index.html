@@ -390,6 +390,12 @@ async function loadVisitorInfo() {
         const info = await res.json();
         const vi = document.getElementById('visitorInfo');
         if (!vi) return;
+        // 如果关闭了访客信息，隐藏容器
+        if (!info.visitor || !info.visitor.ip) {
+            vi.style.display = 'none';
+            return;
+        }
+        vi.style.display = 'flex';
         const loc = [info.visitor.country, info.visitor.region, info.visitor.city].filter(Boolean).join('·') || '未知';
         const sysInfo = info.system;
         const uptime = formatUptime(sysInfo.uptime);

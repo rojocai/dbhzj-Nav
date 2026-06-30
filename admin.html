@@ -784,6 +784,17 @@
             </div>
         </div>
         <div class="form-group"><label>ICP备案号</label><input id="siteIcp" placeholder="沪ICP备XXXXXXXX号-1"></div>
+        <!-- 访客统计开关 -->
+        <div class="form-group" style="margin-top:6px;">
+            <label>访客信息</label>
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;color:#ccc;">
+                    <input type="checkbox" id="visitorEnabled" checked style="width:16px;height:16px;accent-color:#667eea;">
+                    在底部显示访客统计、IP地址、地理位置、服务器信息
+                </label>
+            </div>
+            <div style="font-size:11px;color:#666;margin-top:4px;">关闭后底部不显示访客信息面板，访客API会返回空数据</div>
+        </div>
         <!-- 兼容旧数据的文字Logo字段（隐藏） -->
         <div id="logoTextGroup" style="display:none !important;">
             <input id="logoText" value="">
@@ -1072,6 +1083,7 @@ function renderAll() {
     document.getElementById('siteSubtitle').value = data.site.subtitle || '';
     document.getElementById('siteFooter').value = data.site.footer || '';
     document.getElementById('siteIcp').value = config?.site_icp || '';
+    document.getElementById('visitorEnabled').checked = config.visitor_enabled !== false;
     renderEngines();
     renderQuickLinks();
     renderCategories();
@@ -2120,6 +2132,7 @@ async function saveData() {
         site_background_mobile: document.getElementById('bgImageMobile').value.trim(),
         site_footer: document.getElementById('siteFooter').value.trim() || '🏠 东白湖之家 · 上网从这里开始',
         site_icp: document.getElementById('siteIcp').value.trim(),
+        visitor_enabled: document.getElementById('visitorEnabled').checked,
         site_custom_css: document.getElementById('customCss').value.trim(),
         site_custom_js: document.getElementById('customJs').value.trim(),
         bg_type: document.querySelector('input[name="bgType"]:checked')?.value || 'gradient',

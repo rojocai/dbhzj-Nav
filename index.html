@@ -166,10 +166,7 @@
             .visitor-info .vi-item { white-space: normal; }
         }
     </style>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <!-- 预加载全部可选字体（中文+英文） -->
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700&amp;family=Noto+Serif+SC:wght@400;700&amp;family=ZCOOL+XiaoWei&amp;family=Ma+Shan+Zheng&amp;family=Liu+Jian+Mao+Cao&amp;family=ZCOOL+QingKe+HuangYou&amp;family=Long+Cang&amp;family=ZCOOL+KuaiLe&amp;family=LXGW+WenKai&amp;family=Georgia:ital,wght@0,400;1,400&amp;family=Times+New+Roman&display=swap" rel="stylesheet">
+    <!-- 使用系统字体，避免 Google Fonts 在中国加载缓慢 -->
     <style id="effectStyles">
         /* ===== 文字特效 ===== */
         #siteTitle.effect-marquee, #siteSubtitle.effect-marquee, #footerText.effect-marquee {
@@ -315,10 +312,15 @@ let config = null;
 
 async function loadAll() {
     try {
+        // 10秒超时保护 - 避免网络问题导致页面永远加载中
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 10000);
+
         const [dataRes, configRes] = await Promise.all([
-            fetch(API + '/data'),
-            fetch(API + '/config')
+            fetch(API + '/data', { signal: controller.signal }),
+            fetch(API + '/config', { signal: controller.signal })
         ]);
+        clearTimeout(timeout);
         data = await dataRes.json();
         config = await configRes.json();
         // 迁移：为没有 order 的站点自动生成序号
@@ -379,9 +381,12 @@ async function loadAll() {
         fetch(API + '/visit').catch(e => {});
         loadVisitorInfo();
     } catch(e) {
-        document.getElementById('loading').innerHTML = '❌ 加载数据失败，请稍后重试';
+        document.getElementById('loading').innerHTML = '❌ 加载数据失败，请<a href="javascript:location.reload()" style="color:#60a5fa;">点击刷新</a>重试';
     }
 }
+
+// 启动
+loadAll();
 
 // ===== 访客统计信息 =====
 async function loadVisitorInfo() {
@@ -444,11 +449,9 @@ function loadGoogleFont(fontName) {
     };
     const gf = googleMap[fontName];
     if (!gf) { FONT_LOADED.add(fontName); return; }
-    FONT_LOADED.add(fontName);
-    const link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = 'https://fonts.googleapis.com/css2?family=' + gf + '&display=swap';
-    document.head.appendChild(link);
+    function loadGoogleFont(gf) {
+        // Google Fonts 在中国加载缓慢，跳过远程字体加载，使用系统字体
+    }
 }
 
 // 字体名 → 中文标注/显示用

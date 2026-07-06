@@ -165,7 +165,7 @@ function sendFile(res, filePath) {
         res.writeHead(200, {
             'Content-Type': mime[ext] || 'application/octet-stream',
             'Access-Control-Allow-Origin': '*',
-            'Cache-Control': ext === '.html' ? 'no-cache' : 'max-age=86400'
+            'Cache-Control': ext === '.html' && filePath.endsWith('index.html') ? 'public, max-age=600' : ext === '.html' ? 'no-cache' : 'max-age=86400'
         });
         res.end(content);
     } catch (e) {
@@ -240,6 +240,11 @@ function queryGeoIP(ip) {
         // 内网IP不查询
         if (ip === '127.0.0.1' || ip === '::1' || ip === 'localhost' || ip.startsWith('192.168.') || ip.startsWith('10.') || ip.startsWith('172.16.') || ip.startsWith('172.17.') || ip.startsWith('172.18.') || ip.startsWith('172.19.') || ip.startsWith('172.20.') || ip.startsWith('172.21.') || ip.startsWith('172.22.') || ip.startsWith('172.23.') || ip.startsWith('172.24.') || ip.startsWith('172.25.') || ip.startsWith('172.26.') || ip.startsWith('172.27.') || ip.startsWith('172.28.') || ip.startsWith('172.29.') || ip.startsWith('172.30.') || ip.startsWith('172.31.')) {
             finish({ country: '内网', region: '', city: '' });
+            return;
+        }
+        // Cloudflare 代理IP不查询（实际访客IP未知）
+        if (ip.startsWith('104.16.') || ip.startsWith('104.17.') || ip.startsWith('104.18.') || ip.startsWith('104.19.') || ip.startsWith('104.20.') || ip.startsWith('104.21.') || ip.startsWith('104.22.') || ip.startsWith('104.23.') || ip.startsWith('172.64.') || ip.startsWith('172.65.') || ip.startsWith('172.66.') || ip.startsWith('172.67.') || ip.startsWith('172.68.') || ip.startsWith('172.69.') || ip.startsWith('172.70.') || ip.startsWith('188.114.') || ip.startsWith('188.115.') || ip.startsWith('162.158.') || ip.startsWith('173.245.') || ip.startsWith('103.21.') || ip.startsWith('103.22.') || ip.startsWith('103.31.') || ip.startsWith('141.101.') || ip.startsWith('108.162.') || ip.startsWith('190.93.') || ip.startsWith('197.234.')) {
+            finish({ country: 'Cloudflare', region: '', city: '' });
             return;
         }
         try {
@@ -639,20 +644,12 @@ const server = http.createServer(async (req, res) => {
             const ip = getClientIP(req);
             const stats = readStats();
             const sysInfo = getSystemInfo();
-            const geo = await queryGeoIP(ip);
             sendJSON(res, 200, {
                 stats: {
                     total_visits: stats.total_visits,
                     today_visits: stats.today_visits
                 },
-                visitor: {
-                    ip,
-                    country: geo.country,
-                    region: geo.region,
-                    city: geo.city,
-                    isp: geo.isp || '',
-                    org: geo.org || ''
-                },
+                visitor: { ip, country: '-', region: '-', city: '-', isp: '', org: '' },
                 system: sysInfo
             });
         })();

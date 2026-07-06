@@ -60,6 +60,18 @@ services:
       - ./uploads:/app/uploads          # 上传文件
 ```
 
+
+> ⚠️ **中国大陆用户**：如果 `docker pull rojocai/dbhzj-nav:latest` 超时，请使用 Docker Hub 镜像：
+> ```bash
+> # 方式一：配置 Docker 守护进程镜像（推荐）
+> # 编辑 /etc/docker/daemon.json，添加：
+> # { "registry-mirrors": ["https://dockerproxy.cn"] }
+> # 然后重启 Docker: systemctl restart docker
+>
+> # 方式二：使用镜像前缀
+> docker pull dockerproxy.cn/rojocai/dbhzj-nav:latest
+> ```
+
 ### 使用 Nginx Proxy Manager 反代
 
 1. 在 NPM 面板添加代理

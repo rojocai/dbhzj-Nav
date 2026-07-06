@@ -75,6 +75,24 @@
         .form-group input:focus, .form-group textarea:focus { border-color: #667eea; }
         .form-group textarea { min-height: 60px; resize: vertical; }
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        input[type="time"] { 
+            color-scheme: dark; 
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.08);
+            padding: 10px 14px;
+            border-radius: 8px;
+            color: #d0d0d0;
+            font-size: 14px;
+            outline: none;
+            width: 100%;
+        }
+        input[type="time"]:focus { border-color: #667eea; }
+        input[type="time"]::-webkit-calendar-picker-indicator {
+            filter: invert(0.7);
+            cursor: pointer;
+        }
 
         .site-list { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
         .site-item {
@@ -937,9 +955,63 @@
         </div>
         <div id="categoryList"></div>
     </div>
-</div>
-</div>
 
+    <!-- 备份与还原 -->
+    <div class="section">
+        <div class="section-title">💾 备份与还原</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:16px;">
+                <label style="font-size:13px;color:#999;display:block;margin-bottom:6px;">自动备份</label>
+                <label style="display:flex;align-items:center;gap:8px;margin-bottom:10px;cursor:pointer;">
+                    <input type="checkbox" id="backupEnabled" onchange="saveBackupSettings()">
+                    <span style="font-size:14px;">启用自动备份</span>
+                </label>
+                <div class="form-row" style="grid-template-columns:repeat(auto-fit,minmax(110px,1fr));">
+                    <div class="form-group">
+                        <label>备份周期</label>
+                        <select id="backupPeriod" onchange="onBackupPeriodChange()">
+                            <option value="daily">每天</option>
+                            <option value="weekly">每周</option>
+                            <option value="monthly">每月</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="backupDayGroup" style="display:none;">
+                        <label id="backupDayLabel">周几</label>
+                        <select id="backupDay" onchange="saveBackupSettings()"></select>
+                    </div>
+                    <div class="form-group">
+                        <label>执行时间</label>
+                        <input type="time" id="backupTime" value="03:00" onchange="saveBackupSettings()">
+                    </div>
+                    <div class="form-group">
+                        <label>保留份数</label>
+                        <input type="number" id="backupRetention" value="3" min="1" max="99" onchange="saveBackupSettings()">
+                    </div>
+                </div>
+                <div style="font-size:12px;color:#666;margin-top:4px;">超出保留份数的旧备份将自动删除</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:16px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:8px;">
+                <div style="font-size:13px;color:#999;">手动备份</div>
+                <button onclick="manualBackup()" style="padding:10px 24px;border-radius:10px;font-size:14px;cursor:pointer;border:none;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;width:100%;">🔄 立即备份</button>
+                <div id="backupStatus" style="font-size:12px;color:#666;"></div>
+            </div>
+        </div>
+        <div style="margin-top:4px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                <span style="font-size:13px;color:#999;">备份列表（点击文件名可还原）</span>
+                <button onclick="loadBackupList()" style="padding:4px 10px;border-radius:6px;font-size:12px;cursor:pointer;border:none;background:rgba(96,165,250,0.2);color:#60a5fa;">🔄 刷新</button>
+            </div>
+            <div id="backupList" style="font-size:13px;color:#888;"></div>
+            <div style="margin-top:10px;padding:12px;border:1px dashed rgba(255,255,255,0.12);border-radius:10px;text-align:center;">
+                <div style="font-size:12px;color:#999;margin-bottom:6px;">📤 上传备份文件还原</div>
+                <input type="file" id="backupUploadInput" accept=".json" style="display:none" onchange="uploadBackupFile(this)">
+                <button onclick="document.getElementById('backupUploadInput').click()" style="padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer;border:none;background:rgba(96,165,250,0.2);color:#60a5fa;">选择 .json 备份文件</button>
+                <span id="uploadBackupStatus" style="font-size:12px;color:#666;margin-left:8px;"></span>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
 <script>
 const API = '/api';
 let data = null;
@@ -2311,6 +2383,86 @@ function updateEffectPreview(prefix, effect) {
 
 // ===== 启动 =====
 checkLogin();
+
+// ===== 备份与还原 =====
+async function loadBackupSettings() {
+    try {
+        const r = await fetch('/api/config'); const c = await r.json();
+        document.getElementById('backupEnabled').checked = c.backup_enabled || false;
+        document.getElementById('backupPeriod').value = c.backup_period || 'daily';
+        document.getElementById('backupTime').value = c.backup_time || '03:00';
+        document.getElementById('backupRetention').value = c.backup_retention || 3;
+        initBackupDaySelector();
+        const sd = c.backup_day || '1';
+        if (document.getElementById('backupDay').querySelector('option[value="'+sd+'"]')) document.getElementById('backupDay').value = sd;
+        onBackupPeriodChange();
+    } catch {}
+}
+function initBackupDaySelector() {
+    const sel = document.getElementById('backupDay'); sel.innerHTML = '';
+    const wd = [['0','周日'],['1','周一'],['2','周二'],['3','周三'],['4','周四'],['5','周五'],['6','周六']];
+    const md = []; for (let i=1;i<=28;i++) md.push([String(i),i+'号']);
+    const opts = document.getElementById('backupPeriod').value === 'monthly' ? md : wd;
+    opts.forEach(([v,l]) => { const o=document.createElement('option'); o.value=v; o.textContent=l; sel.appendChild(o); });
+}
+function onBackupPeriodChange() {
+    const p = document.getElementById('backupPeriod').value;
+    const g = document.getElementById('backupDayGroup');
+    const l = document.getElementById('backupDayLabel');
+    if (p === 'daily') { g.style.display = 'none'; } else { g.style.display = 'block'; l.textContent = p==='weekly'?'周几':'几号'; initBackupDaySelector(); }
+    saveBackupSettings();
+}
+async function saveBackupSettings() {
+    const tk = getCookie('nav_token');
+    try { await fetch('/api/backup/settings', { method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+tk},
+        body: JSON.stringify({
+            backup_enabled: document.getElementById('backupEnabled').checked,
+            backup_period: document.getElementById('backupPeriod').value,
+            backup_time: document.getElementById('backupTime').value,
+            backup_retention: parseInt(document.getElementById('backupRetention').value)||3,
+            backup_day: document.getElementById('backupDay').value||'1'
+        })
+    }); } catch {}
+}
+async function manualBackup() {
+    const tk = getCookie('nav_token');
+    document.getElementById('backupStatus').textContent = '⏳ 备份中...';
+    try { const r=await fetch('/api/backup/create',{method:'POST',headers:{'Authorization':'Bearer '+tk}}); const d=await r.json();
+        if (d.success) { document.getElementById('backupStatus').textContent='✅ '+d.filename; await loadBackupList(); }
+        else { document.getElementById('backupStatus').textContent='❌ '+d.error; }
+    } catch { document.getElementById('backupStatus').textContent='❌ 备份失败'; }
+}
+async function loadBackupList() {
+    const tk = getCookie('nav_token'); const el = document.getElementById('backupList');
+    try { const r=await fetch('/api/backup/list',{headers:{'Authorization':'Bearer '+tk}}); const d=await r.json();
+        if (!d.success||!d.backups.length) { el.innerHTML='<span style="color:#666;">暂无备份</span>'; return; }
+        el.innerHTML = d.backups.map(b => {
+            const dt=new Date(b.mtime).toLocaleString('zh-CN'); const sz=(b.size/1024).toFixed(1)+'KB';
+            const dl='/api/backup/download?filename='+encodeURIComponent(b.filename);
+            return '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:rgba(255,255,255,0.02);border-radius:8px;margin-bottom:4px;">'+
+                '<span style="cursor:pointer;flex:1;" onclick="confirmRestore(''+b.filename+'')">📄 '+b.filename+'</span>'+
+                '<span style="font-size:12px;color:#666;margin:0 10px;">'+dt+' ('+sz+')</span>'+
+                '<a href="'+dl+'" download style="padding:3px 8px;border-radius:5px;font-size:11px;text-decoration:none;background:rgba(96,165,250,0.2);color:#60a5fa;">⬇</a></div>';
+        }).join('');
+    } catch { el.innerHTML='<span style="color:#666;">暂无备份</span>'; }
+}
+async function confirmRestore(fn) {
+    if (!confirm('确定要从 '+fn+' 还原？\n当前数据将被覆盖！')) return;
+    const tk = getCookie('nav_token');
+    try { const r=await fetch('/api/backup/restore',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+tk},body:JSON.stringify({filename:fn})}); const d=await r.json();
+        if (d.success) { alert('✅ 还原成功，请刷新页面'); location.reload(); } else { alert('❌ '+d.error); }
+    } catch { alert('❌ 还原失败'); }
+}
+async function uploadBackupFile(input) {
+    const f=input.files[0]; if (!f) return;
+    const tk = getCookie('nav_token'); const se=document.getElementById('uploadBackupStatus'); se.textContent='⏳ 上传中...';
+    try { const fd=new FormData(); fd.append('file',f);
+        const r=await fetch('/api/backup/upload',{method:'POST',headers:{'Authorization':'Bearer '+tk},body:fd}); const d=await r.json();
+        if (d.success) { se.textContent='✅ '+d.filename; await loadBackupList(); } else { se.textContent='❌ '+d.error; }
+    } catch { se.textContent='❌ 上传失败'; }
+    input.value='';
+}
+
 </script>
 </body>
 </html>

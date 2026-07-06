@@ -1,5 +1,8 @@
-node_modules/
+node_modules
+backups/*.json
+!backups/.gitkeep
+stats.json
 uploads/*
-!uploads/.gitkeep
-*.log
-.DS_Store
+!.gitkeep
+.env
+*.bak

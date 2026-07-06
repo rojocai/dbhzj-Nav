@@ -2,12 +2,29 @@
 
 > 个人网址导航系统 — 卡片/条目双布局、拖拽排序、后台管理、多搜索引擎
 
-![Version](https://img.shields.io/badge/version-1.0.5-blue)
+![Version](https://img.shields.io/badge/version-1.0.6-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Docker](https://img.shields.io/badge/docker-ready-brightgreen)
-![Last Updated](https://img.shields.io/badge/last%20update-2026--07--01-brightgreen)
+![Last Updated](https://img.shields.io/badge/last%20update-2026--07--06-brightgreen)
+
 
 ---
+
+## 📋 更新日志
+
+### v1.0.6 (2026-07-06)
+- 💾 **备份与还原系统**：完整的手动/自动备份功能
+  - 手动备份：一键备份全部数据（导航+配置+用户）
+  - 自动备份：支持每天/每周/每月周期自动执行
+  - 周期细化：每周可指定周几、每月可指定几号
+  - 定时执行：可设置具体时间点（如 03:00）
+  - 保留份数：可自定义保留数量，超量自动清理
+  - 文件下载：备份文件支持下载到本地
+  - 文件上传：支持上传 .json 备份文件还原
+  - 状态持久：自动备份设置保存至数据库，刷新不丢失
+- 🎨 **界面优化**：时间选择器磨砂玻璃效果，与整体暗色主题统一
+- 🔧 **保存按钮增强**：点击保存时同步写入备份设置
+
 
 ## ✨ 功能特性
 

@@ -2,9 +2,11 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5">
     <title>东白湖之家 - 上网从这里开始</title>
+    <meta name="description" content="东白湖之家 - 个人网址导航">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧭</text></svg>">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7248322389909279" crossorigin="anonymous"></script>
     <style id="dynamicStyles">
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -298,7 +300,6 @@
             <div id="footerICPContainer">
                 <p id="footerICP"></p>
             </div>
-            <p><a href="https://blog.dbhzj.top">东白湖之家</a> · <a href="https://blog.dbhzj.top">blog.dbhzj.top</a></p>
             <div class="visitor-info" id="visitorInfo"></div>
         </div>
     </div>
@@ -401,7 +402,10 @@ async function loadVisitorInfo() {
             return;
         }
         vi.style.display = 'flex';
-        const loc = [info.visitor.country, info.visitor.region, info.visitor.city].filter(Boolean).join('·') || '未知';
+        // 国旗图标映射
+        const flagMap = {'中国':'🇨🇳','美国':'🇺🇸','日本':'🇯🇵','韩国':'🇰🇷','英国':'🇬🇧','德国':'🇩🇪','法国':'🇫🇷','俄罗斯':'🇷🇺','加拿大':'🇨🇦','澳大利亚':'🇦🇺','新加坡':'🇸🇬','马来西亚':'🇲🇾','泰国':'🇹🇭','越南':'🇻🇳','印度':'🇮🇳','巴西':'🇧🇷','荷兰':'🇳🇱','意大利':'🇮🇹','西班牙':'🇪🇸','瑞士':'🇨🇭','瑞典':'🇸🇪','挪威':'🇳🇴','芬兰':'🇫🇮','丹麦':'🇩🇰','波兰':'🇵🇱','土耳其':'🇹🇷','以色列':'🇮🇱','阿联酋':'🇦🇪','沙特':'🇸🇦','埃及':'🇪🇬','南非':'🇿🇦','阿根廷':'🇦🇷','墨西哥':'🇲🇽','爱尔兰':'🇮🇪','新西兰':'🇳🇿','乌克兰':'🇺🇦','Cloudflare':'☁️','内网':'🏠','超时':'⏰','未知':'❓'};
+        const flag = flagMap[info.visitor.country] || '❓';
+        const loc = flag + ' ' + [info.visitor.country, info.visitor.region, info.visitor.city].filter(Boolean).map(v => v === '-' ? '未知' : v).join('·') || '❓ 未知';
         const sysInfo = info.system;
         const uptime = formatUptime(sysInfo.uptime);
         const platform = sysInfo.platform === 'linux' ? 'Linux' : sysInfo.platform;

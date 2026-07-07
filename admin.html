@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>东白湖之家 - 后台管理</title>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7248322389909279" crossorigin="anonymous"></script>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚙️</text></svg>">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -998,7 +999,7 @@
         </div>
         <div style="margin-top:4px;">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-                <span style="font-size:13px;color:#999;">备份列表（点击文件名可还原）</span>
+                <span style="font-size:13px;color:#999;">备份列表（点击文件名可还原，⬇ 下载到本地）</span>
                 <button onclick="loadBackupList()" style="padding:4px 10px;border-radius:6px;font-size:12px;cursor:pointer;border:none;background:rgba(96,165,250,0.2);color:#60a5fa;">🔄 刷新</button>
             </div>
             <div id="backupList" style="font-size:13px;color:#888;"></div>
@@ -1045,6 +1046,7 @@ function showAdmin(username) {
     document.getElementById('userInfo').style.display = 'flex';
     document.getElementById('currentUser').textContent = username;
     loadData();
+    setTimeout(() => { loadBackupSettings(); loadBackupList(); }, 500);
 }
 
 async function doLogin() {
@@ -2213,7 +2215,12 @@ async function saveData() {
         card_opacity: parseFloat(document.getElementById('cardOpacity').value) || 0.03,
         accent_color: document.getElementById('accentColorText').value.trim() || '#667eea',
         site_keywords: config?.site_keywords || '',
-        site_description: config?.site_description || ''
+        site_description: config?.site_description || '',
+        backup_enabled: document.getElementById('backupEnabled').checked,
+        backup_period: document.getElementById('backupPeriod').value,
+        backup_time: document.getElementById('backupTime').value,
+        backup_retention: parseInt(document.getElementById('backupRetention').value) || 3,
+        backup_day: document.getElementById('backupDay').value || '1'
     };
 
     const btn = document.getElementById('saveBtn');
@@ -2413,8 +2420,7 @@ function onBackupPeriodChange() {
     saveBackupSettings();
 }
 async function saveBackupSettings() {
-    const tk = getCookie('nav_token');
-    try { await fetch('/api/backup/settings', { method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+tk},
+    try { await fetch('/api/backup/settings', { method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({
             backup_enabled: document.getElementById('backupEnabled').checked,
             backup_period: document.getElementById('backupPeriod').value,
@@ -2425,16 +2431,15 @@ async function saveBackupSettings() {
     }); } catch {}
 }
 async function manualBackup() {
-    const tk = getCookie('nav_token');
     document.getElementById('backupStatus').textContent = '⏳ 备份中...';
-    try { const r=await fetch('/api/backup/create',{method:'POST',headers:{'Authorization':'Bearer '+tk}}); const d=await r.json();
+    try { const r=await fetch('/api/backup/create',{method:'POST'}); const d=await r.json();
         if (d.success) { document.getElementById('backupStatus').textContent='✅ '+d.filename; await loadBackupList(); }
         else { document.getElementById('backupStatus').textContent='❌ '+d.error; }
     } catch { document.getElementById('backupStatus').textContent='❌ 备份失败'; }
 }
 async function loadBackupList() {
-    const tk = getCookie('nav_token'); const el = document.getElementById('backupList');
-    try { const r=await fetch('/api/backup/list',{headers:{'Authorization':'Bearer '+tk}}); const d=await r.json();
+    const el = document.getElementById('backupList');
+    try { const r=await fetch('/api/backup/list'); const d=await r.json();
         if (!d.success||!d.backups.length) { el.innerHTML='<span style="color:#666;">暂无备份</span>'; return; }
         el.innerHTML = d.backups.map(b => {
             const dt=new Date(b.mtime).toLocaleString('zh-CN'); const sz=(b.size/1024).toFixed(1)+'KB';
@@ -2442,7 +2447,7 @@ async function loadBackupList() {
             return '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:rgba(255,255,255,0.02);border-radius:8px;margin-bottom:4px;">'+
                 '<span class="bk-restore" data-fn="'+b.filename.replace(/"/g,'&quot;')+'" style="cursor:pointer;flex:1;">📄 '+b.filename+'</span>'+
                 '<span style="font-size:12px;color:#666;margin:0 10px;">'+dt+' ('+sz+')</span>'+
-                '<a href="'+dl+'" download style="padding:3px 8px;border-radius:5px;font-size:11px;text-decoration:none;background:rgba(96,165,250,0.2);color:#60a5fa;">⬇</a></div>';
+                '<a href="'+dl+'" download style="padding:4px 10px;border-radius:6px;font-size:16px;text-decoration:none;background:rgba(96,165,250,0.2);color:#60a5fa;cursor:pointer;display:inline-block;">⬇</a></div>';
         }).join('');
         // 委派点击事件
         el.querySelectorAll('.bk-restore').forEach(el2 => {
@@ -2452,16 +2457,15 @@ async function loadBackupList() {
 }
 async function confirmRestore(fn) {
     if (!confirm('确定要从 '+fn+' 还原？\n当前数据将被覆盖！')) return;
-    const tk = getCookie('nav_token');
-    try { const r=await fetch('/api/backup/restore',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+tk},body:JSON.stringify({filename:fn})}); const d=await r.json();
+    try { const r=await fetch('/api/backup/restore',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({filename:fn})}); const d=await r.json();
         if (d.success) { alert('✅ 还原成功，请刷新页面'); location.reload(); } else { alert('❌ '+d.error); }
     } catch { alert('❌ 还原失败'); }
 }
 async function uploadBackupFile(input) {
     const f=input.files[0]; if (!f) return;
-    const tk = getCookie('nav_token'); const se=document.getElementById('uploadBackupStatus'); se.textContent='⏳ 上传中...';
+    const se=document.getElementById('uploadBackupStatus'); se.textContent='⏳ 上传中...';
     try { const fd=new FormData(); fd.append('file',f);
-        const r=await fetch('/api/backup/upload',{method:'POST',headers:{'Authorization':'Bearer '+tk},body:fd}); const d=await r.json();
+        const r=await fetch('/api/backup/upload',{method:'POST',body:fd}); const d=await r.json();
         if (d.success) { se.textContent='✅ '+d.filename; await loadBackupList(); } else { se.textContent='❌ '+d.error; }
     } catch { se.textContent='❌ 上传失败'; }
     input.value='';

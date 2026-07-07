@@ -528,6 +528,7 @@ const server = http.createServer(async (req, res) => {
         } catch (e) {
             sendJSON(res, 400, { error: '上传失败: ' + e.message });
         }
+    }
 
     // ===== 备份与还原 API =====
     const BACKUP_DIR = path.join(__dirname, 'backups');
@@ -579,9 +580,6 @@ const server = http.createServer(async (req, res) => {
                 return new Date().toDateString() !== new Date(config.last_backup).toDateString();
         }
     }
-        return;
-    }
-
 
     if (pathname === '/api/backup/create' && req.method === 'POST') {
         const token = getTokenFromReq(req); if (!verifyToken(token)) { sendJSON(res, 401, { error: '未登录' }); return; }
@@ -644,12 +642,20 @@ const server = http.createServer(async (req, res) => {
             const ip = getClientIP(req);
             const stats = readStats();
             const sysInfo = getSystemInfo();
+            const geo = await queryGeoIP(ip);
             sendJSON(res, 200, {
                 stats: {
                     total_visits: stats.total_visits,
                     today_visits: stats.today_visits
                 },
-                visitor: { ip, country: '-', region: '-', city: '-', isp: '', org: '' },
+                visitor: {
+                    ip,
+                    country: geo.country,
+                    region: geo.region,
+                    city: geo.city,
+                    isp: geo.isp || '',
+                    org: geo.org || ''
+                },
                 system: sysInfo
             });
         })();

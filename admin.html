@@ -2093,34 +2093,72 @@ function addSite(ci) {
     const nextOrder = sites.length > 0 ? Math.max(...sites.map(s => s.order ?? 0)) + 1 : 1;
     showModal('添加站点', `
         <div class="form-group"><label>站点名称</label><input id="siteName" placeholder="ChatGPT"></div>
-        <div class="form-group"><label>链接</label><input id="siteUrl" placeholder="https://chatgpt.com"></div>
+        <div class="form-group"><label>链接</label><input id="siteUrl" placeholder="https://chatgpt.com" onchange="autoFetchIcon()"></div>
         <div class="form-row">
             <div class="form-group">
                 <label>序号 (数字越小越靠前)</label>
                 <input id="siteOrder" type="number" min="1" value="${nextOrder}" placeholder="1">
             </div>
             <div class="form-group">
-                <label>图标URL (可选,留空自动)</label>
-                <div style="display:flex;gap:8px;">
-                    <input id="siteIcon" placeholder="https://chatgpt.com/favicon.ico" style="flex:1;">
-                    <button type="button" class="btn-ghost" onclick="uploadToField('siteIcon', true)" style="padding:8px 12px;font-size:12px;white-space:nowrap;">📤 图标上传</button>
+                <label>图标 <span id="iconFetchStatus" style="font-size:11px;color:#888;"></span></label>
+                <div style="display:flex;gap:8px;align-items:center;">
+                    <input id="siteIcon" placeholder="留空自动抓取" style="flex:1;">
+                    <img id="iconPreview" style="width:24px;height:24px;border-radius:4px;display:none;">
+                    <button type="button" class="btn-ghost" onclick="uploadToField('siteIcon', true)" style="padding:8px 12px;font-size:12px;white-space:nowrap;">📤</button>
                 </div>
             </div>
         </div>
-    `, () => {
+    `, async () => {
         const name = document.getElementById('siteName').value.trim();
         const url = document.getElementById('siteUrl').value.trim();
         if (!name || !url) { toast('请填写名称和链接', 'error'); return; }
         const order = parseInt(document.getElementById('siteOrder').value) || nextOrder;
         let icon = document.getElementById('siteIcon').value.trim();
         if (!icon) {
-            try { icon = `https://${new URL(url).hostname}/favicon.ico`; } catch(e) { icon = ''; }
+            // 未手动输入图标时自动抓取
+            try {
+                const domain = new URL(url).hostname;
+                const res = await fetch('/api/favicon?url=' + encodeURIComponent(url));
+                if (res.ok) { icon = '/api/favicon?url=' + encodeURIComponent(url); }
+                else { icon = 'fa-globe'; }
+            } catch { icon = 'fa-globe'; }
         }
         data.categories[ci].sites.push({ name, url, icon, order });
         renderCategories();
         toast('站点已添加', 'success');
         closeModal();
     });
+    // 延迟绑定 autoFetchIcon 事件
+    setTimeout(() => {
+        const urlInput = document.getElementById('siteUrl');
+        if (urlInput) urlInput.onchange = autoFetchIcon;
+    }, 100);
+}
+
+// 自动抓取图标预览
+async function autoFetchIcon() {
+    const url = document.getElementById('siteUrl')?.value?.trim();
+    const status = document.getElementById('iconFetchStatus');
+    const preview = document.getElementById('iconPreview');
+    if (!url) return;
+    try { new URL(url); } catch { return; }
+    status.textContent = '⏳ 获取中...';
+    preview.style.display = 'none';
+    try {
+        const res = await fetch('/api/favicon?url=' + encodeURIComponent(url));
+        if (res.ok) {
+            const iconUrl = '/api/favicon?url=' + encodeURIComponent(url);
+            document.getElementById('siteIcon').value = iconUrl;
+            preview.src = iconUrl;
+            preview.style.display = 'inline';
+            status.textContent = '✅';
+        } else {
+            document.getElementById('siteIcon').value = '';
+            status.textContent = '❌ 未找到图标';
+        }
+    } catch {
+        status.textContent = '❌ 获取失败';
+    }
 }
 
 function editSite(ci, si) {

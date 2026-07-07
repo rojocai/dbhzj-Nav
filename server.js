@@ -361,6 +361,57 @@ function saveUploadedFile(filename, buffer) {
     return '/uploads/' + safeName;
 }
 
+
+// ===== 备份与还原 =====
+const BACKUP_DIR = path.join(__dirname, 'backups');
+function ensureBackupDir() {
+    if (!fs.existsSync(BACKUP_DIR)) fs.mkdirSync(BACKUP_DIR, { recursive: true });
+}
+function getBackupFiles() {
+    ensureBackupDir();
+    return fs.readdirSync(BACKUP_DIR).filter(f => f.startsWith('backup-') && f.endsWith('.json')).sort().reverse();
+}
+function createBackupFile() {
+    ensureBackupDir();
+    const now = new Date();
+    const ts = now.getFullYear() + String(now.getMonth()+1).padStart(2,'0') + String(now.getDate()).padStart(2,'0') + '-' + String(now.getHours()).padStart(2,'0') + String(now.getMinutes()).padStart(2,'0') + String(now.getSeconds()).padStart(2,'0');
+    const filename = `backup-${ts}.json`;
+    const fp = path.join(BACKUP_DIR, filename);
+    const data = readData(); const config = readConfig(); const users = readUsers();
+    const backup = { type:'full', version:'1.0.7', created_at: now.toISOString(), data, config, users_raw: users };
+    fs.writeFileSync(fp, JSON.stringify(backup, null, 2), 'utf-8');
+    return { filename, filepath: fp };
+}
+function cleanupOldBackups(retention) {
+    const files = getBackupFiles();
+    while (files.length > retention) { const old = files.pop(); try { fs.unlinkSync(path.join(BACKUP_DIR, old)); } catch {} }
+}
+function shouldRunBackup(config) {
+    if (!config.backup_enabled) return false;
+    const now = new Date();
+    const [th, tm] = (config.backup_time || '03:00').split(':').map(Number);
+    if (Math.abs(now.getHours()*60+now.getMinutes() - (th*60+tm)) > 2) return false;
+    const dayVal = String(config.backup_day || '1');
+    switch (config.backup_period) {
+        case 'weekly': {
+            const wm = {'sun':0,'mon':1,'tue':2,'wed':3,'thu':4,'fri':5,'sat':6};
+            const td = wm[dayVal] !== undefined ? wm[dayVal] : parseInt(dayVal) || 0;
+            if (now.getDay() !== td) return false;
+            if (!config.last_backup) return true;
+            return Math.floor((now - new Date(config.last_backup)) / (7*86400000)) >= 1;
+        }
+        case 'monthly': {
+            const td = Math.min(parseInt(dayVal) || 1, 28);
+            if (now.getDate() !== td) return false;
+            if (!config.last_backup) return true;
+            const lb = new Date(config.last_backup);
+            return now.getMonth() !== lb.getMonth() || now.getFullYear() !== lb.getFullYear();
+        }
+        default:
+            if (!config.last_backup) return true;
+            return new Date().toDateString() !== new Date(config.last_backup).toDateString();
+    }
+}
 // ===== 路由 =====
 const server = http.createServer(async (req, res) => {
     const url = new URL(req.url, `http://${req.headers.host}`);
@@ -523,64 +574,53 @@ const server = http.createServer(async (req, res) => {
             const filePart = parts.find(p => p.filename && p.data);
             if (!filePart) { sendJSON(res, 400, { error: '没有上传文件' }); return; }
 
-            const url = saveUploadedFile(filePart.filename, filePart.data);
+            // 如果是图片，缩放最大 128px 以减少加载量
+            let buffer = filePart.data;
+            const isImage = filePart.filename.match(/\.(jpg|jpeg|png|gif|webp|ico)$/i);
+            if (isImage && buffer.length > 10240) {  // >10KB 的图片才缩放
+                try {
+                    const sharp = require('sharp');
+                    const resized = await sharp(buffer).resize(128, 128, { fit: 'inside', withoutEnlargement: true }).toBuffer();
+                    if (resized.length < buffer.length) buffer = resized;
+                } catch {} // sharp 不可用时保持原图
+            }
+
+            const url = saveUploadedFile(filePart.filename, buffer);
             sendJSON(res, 200, { success: true, url });
         } catch (e) {
             sendJSON(res, 400, { error: '上传失败: ' + e.message });
         }
     }
 
-    // ===== 备份与还原 API =====
-    const BACKUP_DIR = path.join(__dirname, 'backups');
-    function ensureBackupDir() {
-        if (!fs.existsSync(BACKUP_DIR)) fs.mkdirSync(BACKUP_DIR, { recursive: true });
-    }
-    function getBackupFiles() {
-        ensureBackupDir();
-        return fs.readdirSync(BACKUP_DIR).filter(f => f.startsWith('backup-') && f.endsWith('.json')).sort().reverse();
-    }
-    function createBackupFile() {
-        ensureBackupDir();
-        const now = new Date();
-        const ts = now.getFullYear() + String(now.getMonth()+1).padStart(2,'0') + String(now.getDate()).padStart(2,'0') + '-' + String(now.getHours()).padStart(2,'0') + String(now.getMinutes()).padStart(2,'0') + String(now.getSeconds()).padStart(2,'0');
-        const filename = `backup-${ts}.json`;
-        const fp = path.join(BACKUP_DIR, filename);
-        const data = readData(); const config = readConfig(); const users = readUsers();
-        const backup = { type:'full', version:'1.0.6', created_at: now.toISOString(), data, config, users_raw: users };
-        fs.writeFileSync(fp, JSON.stringify(backup, null, 2), 'utf-8');
-        return { filename, filepath: fp };
-    }
-    function cleanupOldBackups(retention) {
-        const files = getBackupFiles();
-        while (files.length > retention) { const old = files.pop(); try { fs.unlinkSync(path.join(BACKUP_DIR, old)); } catch {} }
-    }
-    function shouldRunBackup(config) {
-        if (!config.backup_enabled) return false;
-        const now = new Date();
-        const [th, tm] = (config.backup_time || '03:00').split(':').map(Number);
-        if (Math.abs(now.getHours()*60+now.getMinutes() - (th*60+tm)) > 2) return false;
-        const dayVal = String(config.backup_day || '1');
-        switch (config.backup_period) {
-            case 'weekly': {
-                const wm = {'sun':0,'mon':1,'tue':2,'wed':3,'thu':4,'fri':5,'sat':6};
-                const td = wm[dayVal] !== undefined ? wm[dayVal] : parseInt(dayVal) || 0;
-                if (now.getDay() !== td) return false;
-                if (!config.last_backup) return true;
-                return Math.floor((now - new Date(config.last_backup)) / (7*86400000)) >= 1;
-            }
-            case 'monthly': {
-                const td = Math.min(parseInt(dayVal) || 1, 28);
-                if (now.getDate() !== td) return false;
-                if (!config.last_backup) return true;
-                const lb = new Date(config.last_backup);
-                return now.getMonth() !== lb.getMonth() || now.getFullYear() !== lb.getFullYear();
-            }
-            default:
-                if (!config.last_backup) return true;
-                return new Date().toDateString() !== new Date(config.last_backup).toDateString();
-        }
+    // ---- 网站图标代理 (GET /api/favicon?url=...) ----
+    if (pathname === '/api/favicon' && req.method === 'GET') {
+        const targetUrl = url.searchParams.get('url');
+        if (!targetUrl) { sendJSON(res, 400, { error: '缺少 url 参数' }); return; }
+        try {
+            const u = new URL(targetUrl);
+            // 直接获取 Google favicons（最快最稳定）
+            const googleUrl = `https://www.google.com/s2/favicons?domain=${u.hostname}&sz=64`;
+            try {
+                const resp = await fetch(googleUrl, { signal: AbortSignal.timeout(3000) });
+                if (resp.ok) {
+                    const buf = Buffer.from(await resp.arrayBuffer());
+                    if (buf.length > 0) {
+                        res.writeHead(200, {
+                            'Content-Type': resp.headers.get('content-type') || 'image/png',
+                            'Cache-Control': 'public, max-age=86400',
+                            'Access-Control-Allow-Origin': '*'
+                        });
+                        res.end(buf);
+                        return;
+                    }
+                }
+            } catch {}
+            sendJSON(res, 404, { error: '未找到图标' });
+        } catch (e) { sendJSON(res, 500, { error: e.message }); }
+        return;
     }
 
+    // ---- 备份 API ----
     if (pathname === '/api/backup/create' && req.method === 'POST') {
         const token = getTokenFromReq(req); if (!verifyToken(token)) { sendJSON(res, 401, { error: '未登录' }); return; }
         try { const r = createBackupFile(); const c = readConfig(); cleanupOldBackups(parseInt(c.backup_retention)||3); sendJSON(res, 200, { success: true, filename: r.filename }); } catch (e) { sendJSON(res, 500, { error: '备份失败: '+e.message }); }
@@ -604,7 +644,7 @@ const server = http.createServer(async (req, res) => {
         const fn = url.searchParams.get('filename'); if (!fn) { sendJSON(res, 400, { error: '缺少文件名' }); return; }
         const safe = path.basename(fn); const fp = path.join(BACKUP_DIR, safe);
         if (!fs.existsSync(fp)) { sendJSON(res, 404, { error: '文件不存在' }); return; }
-        try { const c = fs.readFileSync(fp); res.writeHead(200, {'Content-Type':'application/json','Content-Disposition':`attachment; filename="${safe}"`,'Content-Length':c.length}); res.end(c); } catch { sendJSON(res, 500, { error: '下载失败' }); }
+        try { const c = fs.readFileSync(fp); res.writeHead(200, {'Content-Type':'application/json','Content-Disposition':`attachment; filename=\"${safe}\"`,'Content-Length':c.length}); res.end(c); } catch { sendJSON(res, 500, { error: '下载失败' }); }
         return;
     }
     if (pathname === '/api/backup/upload' && req.method === 'POST') {
@@ -630,6 +670,7 @@ const server = http.createServer(async (req, res) => {
         writeConfig(cfg); sendJSON(res, 200, { success: true });
         return;
     }
+
     // ---- 访客统计 & 系统信息 API ----
     if (pathname === '/api/visitor-info' && req.method === 'GET') {
         (async () => {

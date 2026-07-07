@@ -7,6 +7,13 @@
     "start": "node server.js",
     "dev": "node server.js"
   },
-  "keywords": ["navigation", "bookmarks", "dashboard"],
-  "license": "MIT"
+  "keywords": [
+    "navigation",
+    "bookmarks",
+    "dashboard"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "sharp": "^0.35.3"
+  }
 }

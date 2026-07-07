@@ -6,3 +6,4 @@ uploads/*
 !.gitkeep
 .env
 *.bak
+users.json

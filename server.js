@@ -158,14 +158,15 @@ function sendFile(res, filePath) {
         '.gif': 'image/gif',
         '.ico': 'image/x-icon',
         '.svg': 'image/svg+xml',
-        '.woff2': 'font/woff2'
+        '.woff2': 'font/woff2',
+        '.txt': 'text/plain; charset=utf-8'
     };
     try {
         const content = fs.readFileSync(filePath);
         res.writeHead(200, {
             'Content-Type': mime[ext] || 'application/octet-stream',
             'Access-Control-Allow-Origin': '*',
-            'Cache-Control': ext === '.html' && filePath.endsWith('index.html') ? 'public, max-age=600' : ext === '.html' ? 'no-cache' : 'max-age=86400'
+            'Cache-Control': ext === '.html' ? 'no-cache' : 'max-age=86400'
         });
         res.end(content);
     } catch (e) {
@@ -617,6 +618,13 @@ const server = http.createServer(async (req, res) => {
             } catch {}
             sendJSON(res, 404, { error: '未找到图标' });
         } catch (e) { sendJSON(res, 500, { error: e.message }); }
+        return;
+    }
+
+    // ---- 静态文件 (ads.txt, robots.txt 等) ----
+    if (['/ads.txt','/robots.txt','/sitemap.xml'].includes(pathname)) {
+        const fp = path.join(__dirname, pathname.slice(1));
+        if (fs.existsSync(fp)) { sendFile(res, fp); } else { sendJSON(res, 404, { error: 'Not found' }); }
         return;
     }
 

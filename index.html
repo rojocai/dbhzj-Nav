@@ -69,7 +69,7 @@
         .layout-card .site-grid a:hover { background: rgba(102,126,234,0.15); border-color: rgba(102,126,234,0.3); color: #fff; transform: translateY(-3px); box-shadow: 0 6px 20px rgba(102,126,234,0.15); }
         .layout-card .site-grid a.dragging { opacity: 0.4; transform: scale(0.95); border-color: #667eea; }
         .layout-card .site-grid a.drag-over { border-color: #22c55e; border-style: dashed; background: rgba(34,197,94,0.1); transform: translateY(-2px); }
-        .layout-card .site-grid a img { width: 36px; height: 36px; border-radius: 9px; object-fit: cover; background: rgba(255,255,255,0.08); pointer-events: none; }
+        .layout-card .site-grid a img { width: 48px; height: 48px; border-radius: 12px; object-fit: cover; background: rgba(255,255,255,0.08); pointer-events: none; }
         .layout-card .site-grid a .site-name { font-size: 12px; text-align: center; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
 
         /* ===== 条目模式 ===== */
@@ -89,10 +89,16 @@
         .layout-list .site-grid a:hover { background: rgba(102,126,234,0.1); border-radius: 6px; color: #fff; }
         .layout-list .site-grid a.dragging { opacity: 0.4; }
         .layout-list .site-grid a.drag-over { background: rgba(34,197,94,0.15); border-radius: 6px; }
-        .layout-list .site-grid a img { width: 16px; height: 16px; border-radius: 4px; object-fit: cover; pointer-events: none; flex-shrink: 0; }
+        .layout-list .site-grid a img { width: 22px; height: 22px; border-radius: 5px; object-fit: cover; pointer-events: none; flex-shrink: 0; }
         .layout-list .site-grid a .site-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-        /* ===== 布局切换按钮 ===== */
+        /* ===== 站点说明气泡（仅卡片模式） ===== */
+        .tooltip-float { position: fixed; z-index: 99999; background: rgba(20,20,40,0.92); backdrop-filter: blur(12px);
+            color: #ddd; font-size: 12px; padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);
+            max-width: 280px; word-wrap: break-word; line-height: 1.4; pointer-events: none;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5); display: none;
+            animation: tooltipFadeIn 0.2s ease; }
+        @keyframes tooltipFadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
         .layout-toggle { position: fixed; bottom: 76px; right: 20px; z-index: 100; display: flex; flex-direction: column; gap: 6px; }
         .layout-toggle button { width: 44px; height: 44px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.15); background: rgba(15,12,41,0.8); backdrop-filter: blur(8px); color: #aaa; font-size: 18px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
         .layout-toggle button:hover { color: #fff; border-color: rgba(102,126,234,0.5); background: rgba(102,126,234,0.2); }
@@ -305,9 +311,12 @@
     </div>
 </div>
 <a href="/admin.html" class="admin-btn" title="后台管理">⚙️</a>
+<div class="tooltip-float" id="siteTooltip"></div>
 
 <script>
 const API = '/api';
+// HTML 转义
+function esc(str) { return String(str||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 let data = null;
 let config = null;
 
@@ -388,6 +397,50 @@ async function loadAll() {
 
 // 启动
 loadAll();
+
+// 站点说明气泡（浮动层，避免被遮挡）
+const tooltipEl = document.getElementById('siteTooltip');
+let tooltipTimer = null;
+
+document.body.addEventListener('mouseover', function(e) {
+    const a = e.target.closest('.layout-card .site-grid a[data-desc]');
+    if (!a) { hideTooltip(); return; }
+    const desc = a.getAttribute('data-desc');
+    if (!desc) { hideTooltip(); return; }
+    showTooltip(a, desc);
+});
+
+document.body.addEventListener('mouseout', function(e) {
+    if (!e.target.closest('.layout-card .site-grid a[data-desc]')) hideTooltip();
+});
+
+function showTooltip(el, text) {
+    clearTimeout(tooltipTimer);
+    tooltipEl.textContent = text;
+    tooltipEl.style.display = 'block';
+    positionTooltip(el);
+}
+
+function hideTooltip() {
+    clearTimeout(tooltipTimer);
+    tooltipTimer = setTimeout(() => { tooltipEl.style.display = 'none'; }, 50);
+}
+
+function positionTooltip(el) {
+    const rect = el.getBoundingClientRect();
+    const tw = Math.min(tooltipEl.offsetWidth || 200, 280);
+    let left = rect.left + rect.width / 2 - tw / 2;
+    let top = rect.bottom + 10;
+    if (left < 10) left = 10;
+    if (left + tw > window.innerWidth - 10) left = window.innerWidth - tw - 10;
+    if (top + tooltipEl.offsetHeight + 10 > window.innerHeight) {
+        top = rect.top - tooltipEl.offsetHeight - 10;
+        if (top < 10) top = 10;
+    }
+    tooltipEl.style.left = left + 'px';
+    tooltipEl.style.top = top + 'px';
+    tooltipEl.style.transform = 'none';
+}
 
 // ===== 访客统计信息 =====
 async function loadVisitorInfo() {
@@ -747,7 +800,8 @@ function render() {
                                 ondragenter="onDragEnter(event)"
                                 ondragleave="onDragLeave(event)"
                                 ondrop="onDrop(event, ${ci}, ${si})"
-                                ondragend="onDragEnd(event)">
+                                ondragend="onDragEnd(event)"
+                                data-desc="${esc(s.desc)||""}">
                                 <img src="${s.icon}" onerror="this.style.display='none'" loading="lazy">
                                 <span class="site-name">${s.name}</span>
                             </a>`
@@ -773,7 +827,8 @@ function render() {
                                     ondragenter="onDragEnter(event)"
                                     ondragleave="onDragLeave(event)"
                                     ondrop="onDrop(event, ${ci}, ${si})"
-                                    ondragend="onDragEnd(event)">
+                                    ondragend="onDragEnd(event)"
+                                    data-desc="${esc(s.desc)||""}">
                                     <img src="${s.icon}" onerror="this.style.display='none'" loading="lazy">
                                     <span class="site-name">${s.name}</span>
                                 </a>`

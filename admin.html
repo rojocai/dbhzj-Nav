@@ -2107,12 +2107,18 @@ function addSite(ci) {
                     <button type="button" class="btn-ghost" onclick="uploadToField('siteIcon', true)" style="padding:8px 12px;font-size:12px;white-space:nowrap;">📤</button>
                 </div>
             </div>
+            <div class="form-group">
+                <label>说明（鼠标悬停时显示）</label>
+                <textarea id="siteDesc" placeholder="例如：AI 对话助手" oninput="updateDescCount()" style="min-height:50px;resize:vertical;"></textarea>
+                <div style="text-align:right;font-size:11px;color:#666;margin-top:2px;"><span id="descCount">0</span> 字</div>
+            </div>
         </div>
     `, async () => {
         const name = document.getElementById('siteName').value.trim();
         const url = document.getElementById('siteUrl').value.trim();
         if (!name || !url) { toast('请填写名称和链接', 'error'); return; }
         const order = parseInt(document.getElementById('siteOrder').value) || nextOrder;
+        const desc = document.getElementById('siteDesc').value.trim();
         let icon = document.getElementById('siteIcon').value.trim();
         if (!icon) {
             // 未手动输入图标时自动抓取
@@ -2123,7 +2129,7 @@ function addSite(ci) {
                 else { icon = 'fa-globe'; }
             } catch { icon = 'fa-globe'; }
         }
-        data.categories[ci].sites.push({ name, url, icon, order });
+        data.categories[ci].sites.push({ name, url, icon, order, desc });
         renderCategories();
         toast('站点已添加', 'success');
         closeModal();
@@ -2160,6 +2166,12 @@ async function autoFetchIcon() {
         status.textContent = '❌ 获取失败';
     }
 }
+// 说明字数统计
+function updateDescCount() {
+    const el = document.getElementById('siteDesc');
+    const ct = document.getElementById('descCount');
+    if (el && ct) ct.textContent = el.value.length;
+}
 
 function editSite(ci, si) {
     const s = data.categories[ci].sites[si];
@@ -2179,12 +2191,18 @@ function editSite(ci, si) {
                 </div>
             </div>
         </div>
+        <div class="form-group">
+            <label>说明（鼠标悬停时显示）</label>
+            <textarea id="siteDesc" oninput="updateDescCount()" style="min-height:50px;resize:vertical;">${esc(s.desc||'')}</textarea>
+            <div style="text-align:right;font-size:11px;color:#666;margin-top:2px;"><span id="descCount">${(s.desc||'').length}</span> 字</div>
+        </div>
     `, () => {
         data.categories[ci].sites[si] = {
             name: document.getElementById('siteName').value.trim(),
             url: document.getElementById('siteUrl').value.trim(),
             icon: document.getElementById('siteIcon').value.trim(),
-            order: parseInt(document.getElementById('siteOrder').value) || 1
+            order: parseInt(document.getElementById('siteOrder').value) || 1,
+            desc: document.getElementById('siteDesc').value.trim()
         };
         renderCategories();
         toast('已更新', 'success');

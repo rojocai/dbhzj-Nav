@@ -1,7 +1,7 @@
 {
   "name": "dbhzj-nav",
-  "version": "1.0.7",
-  "description": "东白湖之家导航站 - 个人网址导航系统",
+  "version": "1.0.8",
+  "description": "\u4e1c\u767d\u6e56\u4e4b\u5bb6\u5bfc\u822a\u7ad9 - \u4e2a\u4eba\u7f51\u5740\u5bfc\u822a\u7cfb\u7edf",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

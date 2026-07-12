@@ -876,8 +876,8 @@
             <div class="form-group">
                 <label>或上传图片</label>
                 <div style="display:flex;gap:8px;">
-                    <input type="file" id="bgUploadInput" accept="image/*">
-                    <button type="button" class="btn-ghost" onclick="uploadBg()" style="padding:8px 16px;">📤 上传</button>
+                    <input type="file" id="bgUploadInput" accept="image/*" style="display:none" onchange="uploadBg()">
+                    <button type="button" class="btn-ghost" onclick="document.getElementById('bgUploadInput').click()">📤 上传</button>
                 </div>
             </div>
         </div>

@@ -2449,7 +2449,22 @@ let lang = localStorage.getItem(LANG_KEY) || 'zh';
 function toggleLang() { const n = lang === 'zh' ? 'en' : 'zh'; localStorage.setItem(LANG_KEY, n); location.reload(); }
 (function() {
     const e = document.getElementById('langToggle');
-    if (e) e.textContent = lang === 'zh' ? 'EN' : '中文';
+    if (e) {
+        e.textContent = lang === 'zh' ? 'EN' : '中文';
+        // 手机端自动隐藏语言按钮
+        if (window.innerWidth <= 768) {
+            let timer = null;
+            e.style.transition = 'opacity .6s';
+            function showBtn() {
+                e.style.opacity = '1';
+                e.style.pointerEvents = 'auto';
+                clearTimeout(timer);
+                timer = setTimeout(function() { e.style.opacity = '0'; e.style.pointerEvents = 'none'; }, 3000);
+            }
+            showBtn();
+            window.addEventListener('scroll', showBtn);
+        }
+    }
     if (lang === 'en') {
         setTimeout(translateAdmin, 500);
         setTimeout(translateAdmin, 2000);

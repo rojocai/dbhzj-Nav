@@ -2620,6 +2620,27 @@ function translateAdmin() {
         '未选择文件': 'No file chosen',
         '留空不显示图标': 'Hide icon if empty',
         '留空则不显示图标': 'Hide icon if empty',
+
+        'LXGW WenKai（霞鹜文楷）': 'LXGW WenKai',
+        'Liu Jian Mao Cao（柳建毛草）': 'Liu Jian Mao Cao',
+        'Long Cang（龙藏体）': 'Long Cang',
+        'Ma Shan Zheng（马善政楷书）': 'Ma Shan Zheng',
+        'Microsoft YaHei（微软雅黑）': 'Microsoft YaHei',
+        'Noto Sans SC（思源黑体）': 'Noto Sans SC',
+        'Noto Serif SC（思源宋体）': 'Noto Serif SC',
+        'PingFang SC（苹方）': 'PingFang SC',
+        'ZCOOL KuaiLe（站酷快乐）': 'ZCOOL KuaiLe',
+        'ZCOOL QingKe HuangYou（站酷晴空）': 'ZCOOL QingKe HuangYou',
+        'ZCOOL XiaoWei（站酷小魏）': 'ZCOOL XiaoWei',
+        '✏️ 文字模式': '✏️ Text Mode',
+        '🖼️ 图片模式': '🖼️ Image Mode',
+        '📝 基本设置': '📝 Basic',
+        '🔑 修改密码': '🔑 Change Password',
+        '🚪 退出': '🚪 Logout',
+        '标题展示方式': 'Title Display',
+        '网站标题': 'Site Title',
+        '字体': 'Font',
+        '默认字体': 'Default Font',
     };
     const w = document.createTreeWalker(document.body, 4);
     while (w.nextNode()) { const n = w.currentNode; const t = n.nodeValue.trim(); if (map[t]) n.nodeValue = t.replace(t, map[t]); }

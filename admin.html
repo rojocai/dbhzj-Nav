@@ -423,6 +423,7 @@
     <div class="actions">
         <button onclick="saveData()" class="btn-success" id="saveBtn">💾 保存</button>
         <a href="/" target="_blank">🔗 查看导航</a>
+<button class="lang-toggle" id="langToggle" onclick="toggleLang()" style="margin-left:10px;padding:4px 12px;border-radius:20px;border:1px solid rgba(255,255,255,0.15);background:rgba(15,12,41,0.8);color:#aaa;font-size:12px;cursor:pointer;">EN</button>
     </div>
 </div>
 
@@ -1068,6 +1069,7 @@ function showLogin() {
 }
 
 function showAdmin(username) {
+    if (lang === 'en') setTimeout(translateAdmin, 300);
     document.getElementById('loginPage').style.display = 'none';
     document.getElementById('adminContent').style.display = 'block';
     document.getElementById('userInfo').style.display = 'flex';
@@ -2006,7 +2008,7 @@ function renderCategories() {
                 <span class="order-badge" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:rgba(102,126,234,0.2);color:#667eea;font-size:12px;font-weight:700;flex-shrink:0;">${c.catOrder ?? ci+1}</span>
                 <input class="icon-input" value="${esc(c.icon)}" onchange="updateCat(${ci},'icon',this.value)" placeholder="图标" id="catIconInput-${ci}">
                 <button type="button" class="emoji-btn" onclick="toggleEmojiPicker(${ci})" title="选择Emoji">😊</button>
-                <input value="${esc(c.name)}" onchange="updateCat(${ci},'name',this.value)" placeholder="分类名称">
+                <input value="${esc(lang === 'en' ? (c.enName||c.name) : c.name)}" onchange="updateCat(${ci},lang === 'en' ? 'enName' : 'name',this.value)" placeholder="分类名称" style="flex:1;min-width:80px;">
                 <span style="font-size:12px;color:#666;">${c.sites.length}个站点</span>
                 <div class="emoji-picker" id="emojiPicker-${ci}"></div>
                 <div class="cat-actions">
@@ -2441,6 +2443,22 @@ function toast(msg, type) {
     setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity 0.3s'; setTimeout(() => el.remove(), 300); }, 3000);
 }
 
+// ===== 国际化 =====
+const LANG_KEY = 'nav_lang';
+let lang = localStorage.getItem(LANG_KEY) || 'zh';
+function toggleLang() { const n = lang === 'zh' ? 'en' : 'zh'; localStorage.setItem(LANG_KEY, n); location.reload(); }
+(function() {
+    const e = document.getElementById('langToggle');
+    if (e) e.textContent = lang === 'zh' ? 'EN' : '中文';
+    if (lang === 'en') {
+        setTimeout(translateAdmin, 500);
+        setTimeout(translateAdmin, 2000);
+        const o = new MutationObserver(() => translateAdmin());
+        o.observe(document.body, { childList: true, subtree: true });
+        setTimeout(() => o.disconnect(), 12000);
+    }
+})();
+
 function showModal(title, body, onConfirm) {
     const overlay = document.getElementById('modalOverlay');
     const content = document.getElementById('modalContent');
@@ -2453,7 +2471,143 @@ function showModal(title, body, onConfirm) {
         </div>
     `;
     overlay.classList.add('active');
+    if (lang === 'en') {
+        setTimeout(translateAdmin, 500);
+        const cncl = content.querySelector('.btn-cancel');
+        const ok = document.getElementById('modalConfirmBtn');
+        if (cncl) cncl.textContent = 'Cancel';
+        if (ok) ok.textContent = 'OK';
+    }
     document.getElementById('modalConfirmBtn').onclick = onConfirm;
+}
+
+function translateAdmin() {
+    const map = {
+        '确定':'OK','取消':'Cancel','💾 保存':'💾 Save','🔗 查看导航':'🔗 View Site',
+        '后台登录':'Admin Login','登 录':'Login','请输入管理员账号密码':'Enter admin creds',
+        '用户名':'Username','密码':'Password',
+        '外观设置':'Appearance','搜索引擎':'Search Engines','快捷链接':'Quick Links',
+        '分类管理':'Categories','备份与还原':'Backup & Restore',
+        '+ 添加分类':'+ Add Category','暂无站点':'No sites','暂无数据':'No data',
+        '✏️ 编辑':'✏️ Edit','编辑站点':'Edit Site','添加站点':'Add Site',
+        '分类名称':'Category Name','分类序号':'Order','图标 (emoji)':'Icon',
+        '说明（鼠标悬停时显示）':'Desc (on hover)',
+        '📖 关于我们':'📖 About Us','🔒 隐私政策':'🔒 Privacy Policy','📜 服务条款':'📜 Terms of Service',
+        '📞 联系方式编辑':'📞 Contact Info',
+        '电话':'Phone','邮箱':'Email','微信':'WeChat','QQ':'QQ',
+        'Telegram':'Telegram','Discord':'Discord','Twitter/X':'Twitter','GitHub':'GitHub',
+        '地址':'Address','站点名称':'Site Name','链接':'URL','图标URL':'Icon URL',
+        '选择Emoji':'Select Emoji','添加分类':'Add Category',
+        '添加搜索引擎':'Add Search Engine','添加快捷链接':'Add Quick Link',
+        '编辑搜索引擎':'Edit Search Engine','编辑快捷链接':'Edit Quick Link',
+        '留空自动抓取':'Auto-fetch','例如：AI 对话助手':'e.g. AI assistant',
+        '名称':'Name','搜索URL':'Search URL','图标URL (可选)':'Icon URL (opt)',
+        '序号 (数字越小越靠前)':'Order','序号 (留空自动排到最后)':'Order (auto)',
+        '周一':'Mon','周二':'Tue','周三':'Wed','周四':'Thu','周五':'Fri','周六':'Sat','周日':'Sun',
+        '周几':'Day','几号':'Date',
+        '自定义CSS (高级)':'Custom CSS','自定义JS (高级)':'Custom JS',
+        '拖动排序':'Drag to sort','英文名':'EN Name',
+        '默认字体':'Default Font','Aa 字体预览':'Aa Font Preview',
+        'PingFang SC（苹方）':'PingFang SC','Microsoft YaHei（微软雅黑）':'Microsoft YaHei',
+        'Noto Sans SC（思源黑体）':'Noto Sans SC',
+        '标题字体':'Title Font','副标题字体':'Subtitle Font','页脚字体':'Footer Font',
+        '字体颜色':'Color','背景':'Background','背景颜色':'Bg Color','透明度':'Opacity',
+        '自动备份':'Auto Backup','备份周期':'Period','备份时间':'Time',
+        '保留份数':'Retention','立即备份':'Backup Now','每天':'Daily','每周':'Weekly','每月':'Monthly',
+        '登录成功':'Login OK','登录失败':'Login failed','保存失败':'Save failed',
+        '修改账号密码':'Change Password','🔑 修改密码':'🔑 Change Password','🚪 退出':'🚪 Logout',
+        '网络错误，请重试':'Network error, retry','两次密码不一致':'Password mismatch',
+        '新密码 (至少6位)':'New Password (min 6)','确认新密码':'Confirm Password',
+        '修改后需要重新登录':'Re-login required','新用户名 (留空不修改)':'New Username',
+        '旧密码':'Old Password','请填写名称和链接':'Enter name & URL',
+        '请选择要上传的图片':'Select image','密码修改成功，请重新登录':'Password changed, re-login',
+        '📝 基本设置':'📝 Basic','🎨 外观设置':'🎨 Appearance',
+        '🔍 搜索引擎':'🔍 Search Engines','📂 分类管理':'📂 Categories',
+        '💾 备份与还原':'💾 Backup & Restore','⚡ 快捷链接':'⚡ Quick Links',
+        '标题展示方式':'Title Display','字体':'Font','网站标题':'Site Title',
+        '颜色':'Color','Logo图片 URL':'Logo Image URL','ICP备案号':'ICP No.',
+        '卡片透明度':'Card Opacity','强调色 (主题色)':'Accent Color',
+        '访客信息':'Visitor Info','启用访客统计':'Enable Stats',
+        '手动备份':'Manual Backup','选择文件':'Choose File',
+        '布局方向':'Layout','旋转角度':'Rotation',
+        '🌈 渐变背景':'🌈 Gradient','🎨 纯色背景':'🎨 Solid','🖼️ 图片背景':'🖼️ Image',
+        '🎬 选择特效查看预览':'🎬 Select Effect',
+        '📤 上传备份文件还原':'📤 Upload & Restore','🔄 立即备份':'🔄 Backup Now',
+        '确定退出登录':'Confirm logout?','确定删除分类「':'Delete category: ',
+        '」及其所有站点？':'" and all sites?',
+        '编辑站点':'Edit Site',
+        '添加分类':'Add Category',
+        '+ 添加': '+ Add',
+        '东白湖之家 - 后台管理': 'Dongbaihu Home - Admin',
+        '🏠 东白湖之家 - 后台管理': '🏠 Dongbaihu Home - Admin',
+        '✏️ 文字模式': '✏️ Text Mode',
+        '🖼️ 图片模式': '🖼️ Image Mode',
+        '副标题': 'Subtitle',
+        '底部文字': 'Footer Text',
+        '🎨 文字样式设置 ▾': '🎨 Text Style ▾',
+        '🎨 副标题样式设置 ▾': '🎨 Subtitle Style ▾',
+        '🎨 底部文字样式设置 ▾': '🎨 Footer Style ▾',
+        '光晕': 'Glow',
+        '墨迹': 'Inkblot',
+        '弹跳': 'Bounce',
+        '心跳': 'Heartbeat',
+        '摇摆': 'Shake',
+        '淡入': 'Fade',
+        '翻转': 'Flip',
+        '脉冲': 'Pulse',
+        '闪烁': 'Blink',
+        '霓虹': 'Neon',
+        '滚动': 'Marquee',
+        '打字机': 'Typing',
+        '📤 上传': '📤 Upload',
+        '🔄 刷新': '🔄 Refresh',
+        '🔄 刷新分类排序': '🔄 Refresh Order',
+        '特效': 'Effect',
+        '字号 (px)': 'Font Size (px)',
+        '宽度（%）': 'Width (%)',
+        '高度（%）': 'Height (%)',
+        '横向（左右）': 'Horizontal (L/R)',
+        '纵向（上下）': 'Vertical (U/D)',
+        '背景类型': 'Bg Type',
+        '背景图片URL (PC端)': 'Bg Image URL (Desktop)',
+        '背景图片URL (手机端，可选)': 'Bg Image URL (Mobile)',
+        '渐变背景CSS': 'Gradient CSS',
+        '当前尺寸：': 'Current Size: ',
+        '或上传图片': 'Or upload image',
+        '版权文字': 'Copyright',
+        '执行时间': 'Execution Time',
+        '🔗 等比例缩放（勾选后拖动宽度，高度同步变化）': '🔗 Lock aspect ratio',
+        '选择 .json 备份文件': 'Select .json backup file',
+        '超出保留份数的旧备份将自动删除': 'Old backups beyond retention auto-deleted',
+        '备份列表（点击文件名可还原，⬇ 下载到本地）': 'Backups (click to restore, ⬇ to download)',
+        '关闭后底部不显示访客信息面板，访客API会返回空数据': 'Disable visitor panel & API when off',
+        '启用自动备份': 'Enable Auto Backup',
+        'LXGW WenKai（霞鹜文楷）': 'LXGW WenKai',
+        'Liu Jian Mao Cao（柳建毛草）': 'Liu Jian Mao Cao',
+        'Long Cang（龙藏体）': 'Long Cang',
+        'Ma Shan Zheng（马善政楷书）': 'Ma Shan Zheng',
+        'Noto Serif SC（思源宋体）': 'Noto Serif SC',
+        'ZCOOL KuaiLe（站酷快乐）': 'ZCOOL KuaiLe',
+        'ZCOOL QingKe HuangYou（站酷晴空）': 'ZCOOL QingKe HuangYou',
+        'ZCOOL XiaoWei（站酷小魏）': 'ZCOOL XiaoWei',
+        '文件 & 通用': 'Docs & General',
+        '科技 & 编程': 'Tech & Programming',
+        'AI & 创新': 'AI & Innovation',
+        '收藏 & 兴趣': 'Favorites',
+        '工具 & 设置': 'Tools & Settings',
+        '社交 & 媒体': 'Social & Media',
+        '生活 & 餐饮': 'Life & Food',
+        '自然 & 旅行': 'Nature & Travel',
+        '游戏 & 娱乐': 'Gaming & Fun',
+        '表情 & 动作': 'Emojis & Actions',
+        '专业 & 商务': 'Business & Pro',
+        '动物 & 食物': 'Animals & Food',
+        '交通 & 音乐': 'Transport & Music',
+    };
+    const w = document.createTreeWalker(document.body, 4);
+    while (w.nextNode()) { const n = w.currentNode; const t = n.nodeValue.trim(); if (map[t]) n.nodeValue = t.replace(t, map[t]); }
+    document.querySelectorAll('[placeholder]').forEach(function(el) { const p=el.getAttribute('placeholder'); if (map[p]) el.setAttribute('placeholder', map[p]); });
+    document.querySelectorAll('[title]').forEach(function(el) { const t=el.getAttribute('title'); if (map[t]) el.setAttribute('title', map[t]); });
 }
 
 function closeModal() {
@@ -2463,6 +2617,11 @@ function closeModal() {
 document.getElementById('modalOverlay').onclick = function(e) {
     if (e.target === this) closeModal();
 };
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('.emoji-picker, .emoji-btn')) {
+        document.querySelectorAll('.emoji-picker.open').forEach(function(p) { p.classList.remove('open'); });
+    }
+});
 
 // ===== 工具函数 =====
 function escapeHtml(str) {
@@ -2532,8 +2691,9 @@ async function loadBackupSettings() {
 }
 function initBackupDaySelector() {
     const sel = document.getElementById('backupDay'); sel.innerHTML = '';
-    const wd = [['0','周日'],['1','周一'],['2','周二'],['3','周三'],['4','周四'],['5','周五'],['6','周六']];
-    const md = []; for (let i=1;i<=28;i++) md.push([String(i),i+'号']);
+    const en = lang === 'en';
+    const wd = en ? [['0','Sun'],['1','Mon'],['2','Tue'],['3','Wed'],['4','Thu'],['5','Fri'],['6','Sat']] : [['0','周日'],['1','周一'],['2','周二'],['3','周三'],['4','周四'],['5','周五'],['6','周六']];
+    const md = []; for (let i=1;i<=28;i++) md.push([String(i), en ? i+(i===1?'st':i===2?'nd':i===3?'rd':'th') : i+'号']);
     const opts = document.getElementById('backupPeriod').value === 'monthly' ? md : wd;
     opts.forEach(([v,l]) => { const o=document.createElement('option'); o.value=v; o.textContent=l; sel.appendChild(o); });
 }

@@ -1431,7 +1431,7 @@ function toggleStylePanel(panelId, toggleEl) {
     if (!panel) return;
     const isOpen = panel.classList.toggle('open');
     toggleEl.classList.toggle('open', isOpen);
-    toggleEl.textContent = isOpen ? toggleEl.textContent.replace('▾', '▴') : toggleEl.textContent.replace('▴', '▾');
+    if (lang === 'en') setTimeout(translateAdmin, 30);
 }
 
 // ===== 刷新分类排序 =====
@@ -2472,7 +2472,7 @@ function showModal(title, body, onConfirm) {
     `;
     overlay.classList.add('active');
     if (lang === 'en') {
-        setTimeout(translateAdmin, 500);
+        setTimeout(translateAdmin, 50);
         const cncl = content.querySelector('.btn-cancel');
         const ok = document.getElementById('modalConfirmBtn');
         if (cncl) cncl.textContent = 'Cancel';
@@ -2582,6 +2582,9 @@ function translateAdmin() {
         '备份列表（点击文件名可还原，⬇ 下载到本地）': 'Backups (click to restore, ⬇ to download)',
         '关闭后底部不显示访客信息面板，访客API会返回空数据': 'Disable visitor panel & API when off',
         '启用自动备份': 'Enable Auto Backup',
+        '+ 添加站点': '+ Add Site',
+        '选择文件': 'Choose File',
+        '未选择文件': 'No file chosen',
         'LXGW WenKai（霞鹜文楷）': 'LXGW WenKai',
         'Liu Jian Mao Cao（柳建毛草）': 'Liu Jian Mao Cao',
         'Long Cang（龙藏体）': 'Long Cang',
@@ -2603,6 +2606,12 @@ function translateAdmin() {
         '专业 & 商务': 'Business & Pro',
         '动物 & 食物': 'Animals & Food',
         '交通 & 音乐': 'Transport & Music',
+
+        '无': 'None',
+        '留空则使用PC端图片': 'Use desktop image if empty',
+        '选择文件': 'Choose File',
+        '未选择文件': 'No file chosen',
+        '留空不显示图标': 'Hide icon if empty',
     };
     const w = document.createTreeWalker(document.body, 4);
     while (w.nextNode()) { const n = w.currentNode; const t = n.nodeValue.trim(); if (map[t]) n.nodeValue = t.replace(t, map[t]); }
@@ -2618,8 +2627,18 @@ document.getElementById('modalOverlay').onclick = function(e) {
     if (e.target === this) closeModal();
 };
 document.addEventListener('click', function(e) {
+    // Emoji picker
     if (!e.target.closest('.emoji-picker, .emoji-btn')) {
         document.querySelectorAll('.emoji-picker.open').forEach(function(p) { p.classList.remove('open'); });
+    }
+    // Style panels
+    const sp = e.target.closest('.style-panel, .style-toggle');
+    if (!sp) {
+        document.querySelectorAll('.style-panel.open').forEach(function(p) { p.classList.remove('open'); });
+        document.querySelectorAll('.style-toggle.open').forEach(function(t) { 
+            t.classList.remove('open');
+            if (lang === 'en') setTimeout(translateAdmin, 30);
+        });
     }
 });
 

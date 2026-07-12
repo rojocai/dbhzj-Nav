@@ -234,6 +234,12 @@
             cursor: pointer; transition: all 0.15s;
         }
         .emoji-picker span:hover { background: rgba(102,126,234,0.3); transform: scale(1.2); }
+.emoji-cat { margin-bottom: 2px; width: 100%; }
+.emoji-cat-header { cursor: pointer; padding: 6px 8px; border-radius: 6px; font-size: 12px; color: #999; display: flex; align-items: center; gap: 6px; width: 100%; box-sizing: border-box; }
+.emoji-cat-header:hover { background: rgba(255,255,255,0.05); color: #ddd; }
+.emoji-cat-arrow { font-size: 10px; transition: transform 0.2s; color: #666; }
+.emoji-cat-body { display: none; flex-wrap: wrap; gap: 4px; padding: 4px 0 4px 18px; }
+.emoji-cat-body.open { display: flex; }
         .emoji-btn {
             padding: 4px 10px; border-radius: 6px; font-size: 12px;
             cursor: pointer; border: none; background: rgba(96,165,250,0.2);
@@ -927,6 +933,27 @@
             <label>自定义JS (高级)</label>
             <textarea id="customJs" rows="3" placeholder="// 在这里写入自定义JavaScript" style="font-family:monospace;font-size:13px;"></textarea>
         </div>
+        <div class="form-group"><label>📖 关于我们</label><textarea id="pageAbout" rows="4" placeholder="关于本站的介绍" style="font-size:13px;"></textarea></div>
+        <div style="border-top:1px solid rgba(255,255,255,0.06);margin-top:20px;padding-top:16px;">
+        <div style="font-size:15px;font-weight:600;color:#c8c8e8;margin-bottom:16px;">📞 联系方式编辑</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div><label style="display:block;font-size:13px;color:#999;margin-bottom:4px;">电话</label><input id="contactPhone" placeholder="010-88886666" style="width:100%;padding:8px 12px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#ddd;font-size:14px;outline:none;"></div>
+        <div><label style="display:block;font-size:13px;color:#999;margin-bottom:4px;">邮箱</label><input id="contactEmail" placeholder="contact@example.com" style="width:100%;padding:8px 12px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#ddd;font-size:14px;outline:none;"></div>
+        <div><label style="display:block;font-size:13px;color:#999;margin-bottom:4px;">微信</label><input id="contactWechat" placeholder="WeChat ID" style="width:100%;padding:8px 12px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#ddd;font-size:14px;outline:none;"></div>
+        <div><label style="display:block;font-size:13px;color:#999;margin-bottom:4px;">QQ</label><input id="contactQQ" placeholder="QQ号码" style="width:100%;padding:8px 12px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#ddd;font-size:14px;outline:none;"></div>
+        <div><label style="display:block;font-size:13px;color:#999;margin-bottom:4px;">Telegram</label><input id="contactTelegram" placeholder="@username" style="width:100%;padding:8px 12px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#ddd;font-size:14px;outline:none;"></div>
+        <div><label style="display:block;font-size:13px;color:#999;margin-bottom:4px;">Discord</label><input id="contactDiscord" placeholder="邀请链接" style="width:100%;padding:8px 12px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#ddd;font-size:14px;outline:none;"></div>
+        <div><label style="display:block;font-size:13px;color:#999;margin-bottom:4px;">Twitter/X</label><input id="contactTwitter" placeholder="@username" style="width:100%;padding:8px 12px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#ddd;font-size:14px;outline:none;"></div>
+        <div><label style="display:block;font-size:13px;color:#999;margin-bottom:4px;">GitHub</label><input id="contactGithub" placeholder="用户名" style="width:100%;padding:8px 12px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#ddd;font-size:14px;outline:none;"></div>
+        </div>
+        <div style="margin-top:8px;"><label style="display:block;font-size:13px;color:#999;margin-bottom:4px;">地址</label><input id="contactAddress" placeholder="公司/学校地址" style="width:100%;padding:8px 12px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#ddd;font-size:14px;outline:none;"></div>
+        <div style="margin-top:12px;border-top:1px solid rgba(255,255,255,0.06);padding-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div><label style="display:block;font-size:13px;color:#999;margin-bottom:4px;">Powered by</label><input id="footerPoweredBy" placeholder="东白湖之家导航站 v1.0.8" style="width:100%;padding:8px 12px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#ddd;font-size:14px;outline:none;"></div>
+        <div><label style="display:block;font-size:13px;color:#999;margin-bottom:4px;">版权文字</label><input id="footerCopyright" placeholder="© 2026 dbhzj.de 版权所有" style="width:100%;padding:8px 12px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#ddd;font-size:14px;outline:none;"></div>
+        </div>
+        </div>
+        <div class="form-group"><label>🔒 隐私政策</label><textarea id="pagePrivacy" rows="5" placeholder="隐私政策内容（需包含Cookie说明）" style="font-size:13px;"></textarea></div>
+        <div class="form-group"><label>📜 服务条款</label><textarea id="pageTerms" rows="5" placeholder="服务条款内容" style="font-size:13px;"></textarea></div>
     </div>
 
     <!-- 搜索引擎 -->
@@ -1294,6 +1321,21 @@ function renderConfig() {
     // 自定义CSS/JS
     document.getElementById('customCss').value = config.site_custom_css || '';
     document.getElementById('customJs').value = config.site_custom_js || '';
+    loadPageContent('about', 'pageAbout');
+    loadPageContent('privacy', 'pagePrivacy');
+    loadPageContent('terms', 'pageTerms');
+    document.getElementById('contactEmail').value = config.contactEmail || '';
+    document.getElementById('contactPhone').value = config.contactPhone || '';
+    document.getElementById('contactWechat').value = config.contactWechat || '';
+    document.getElementById('contactQQ').value = config.contactQQ || '';
+    document.getElementById('contactTelegram').value = config.contactTelegram || '';
+    document.getElementById('contactDiscord').value = config.contactDiscord || '';
+    document.getElementById('contactTwitter').value = config.contactTwitter || '';
+    document.getElementById('contactGithub').value = config.contactGithub || '';
+    document.getElementById('contactAddress').value = config.contactAddress || '';
+    document.getElementById('footerPoweredBy').value = config.footerPoweredBy || '';
+    document.getElementById('footerCopyright').value = config.footerCopyright || '';
+
 }
 
 function onBgTypeChange(type) {
@@ -1923,18 +1965,20 @@ function deleteQuickLink(i) {
 
 // ===== 分类管理 =====
 const CATEGORY_EMOJIS = [
-    '📁','📂','📋','📌','📎','🖊️','✏️','📝',
-    '💻','🖥️','📱','💿','🛒','💰','🎮','🎬',
-    '🎵','🎨','📷','🎯','⚽','🏀','🚗','✈️',
-    '🌍','🏠','💡','🔧','⚙️','🔒','🔑','📡',
-    '📊','📈','📉','🗂️','📚','📖','🔍','🔄',
-    '🔗','💬','👥','⭐','🔥','💎','🎉','✅',
-    '🚀','💪','🌈','🎭','🍕','☕','🏥','🏫',
-    '🏛️','🌿','🐾','🎪','🧩','🕹️','🎲','♟️',
-    '🤖','🧠','💭','🗣️','👀','🖼️','🎞️','📺',
-    '📻','🕰️','💼','🏗️','🧬','🔬','🔭','🌐'
+    { name: '文件 & 通用', emojis: ['📁','📂','📋','📌','📎','🖊️','✏️','📝','📄','📑','📃','🗂️','📚','📖','📕','📗','📘'] },
+    { name: '科技 & 编程', emojis: ['💻','🖥️','📱','💿','🖨️','⌨️','🖱️','🖲️','🔌','🔋','💾','📀','🎞️','📺','📻','🎙️'] },
+    { name: 'AI & 创新', emojis: ['🤖','🧠','💭','🔮','✨','🌟','💫','⚡','🔥','💡','🎯','🚀','🛸','🧪','🔬','🔭'] },
+    { name: '收藏 & 兴趣', emojis: ['🛒','💰','🎮','🎬','🎵','🎨','📷','🎯','⚽','🏀','🏈','⚾','🎾','🏓','⛳','🥊'] },
+    { name: '工具 & 设置', emojis: ['🔧','⚙️','🔒','🔑','📡','📊','🔩','🧰','🛠️','⏱️','📏','🧲','🔍','🔎','🗜️','🧪'] },
+    { name: '社交 & 媒体', emojis: ['💬','👥','⭐','💎','🎉','✅','🚀','🎤','🎧','📢','📣','🔔','📨','📬','💌','📋'] },
+    { name: '生活 & 餐饮', emojis: ['🍕','☕','🍜','🍣','🍰','🧋','🍺','🍷','🍩','🍪','🥟','🍱','🥘','🍿','🧁','🥤'] },
+    { name: '自然 & 旅行', emojis: ['🌍','🌏','🌎','🌿','🌸','🌴','⛰️','🏖️','🌊','☀️','🌈','🌙','⭐','☁️','❄️','🔥'] },
+    { name: '游戏 & 娱乐', emojis: ['🕹️','🎲','♟️','🧩','🎯','🎱','🎿','🚴','🎪','🎭','🎨','🎵','🎸','🎺','🎻','🥁'] },
+    { name: '表情 & 动作', emojis: ['😊','😎','🤩','😍','🥳','🤔','🙌','👏','👍','💪','🤝','✨','💅','🫶'] },
+    { name: '专业 & 商务', emojis: ['💼','🏗️','📈','📊','📉','📅','⏰','🗓️','📦','🏢','🏭','📋','📎','🖇️','✉️','📧'] },
+    { name: '动物 & 食物', emojis: ['🐱','🐶','🐼','🐨','🦊','🐰','🦄','🐧','🐬','🐳','🦋','🐝','🐞','🌻','🍎','🍊'] },
+    { name: '交通 & 音乐', emojis: ['🚢','🚁','🚀','🛸','🚂','🚲','🚕','🚌','🎸','🎺','🎻','🥁','🎹','🎼','🎬','🎥'] },
 ];
-
 function renderCategories() {
     // 迁移：为没有 catOrder 的分类自动生成序号
     data.categories.forEach((c, ci) => {
@@ -2050,7 +2094,7 @@ function addCategory() {
     // 填充弹窗中的 emoji picker
     const picker = document.getElementById('modalEmojiPicker');
     if (picker) {
-        picker.innerHTML = CATEGORY_EMOJIS.map(e => `<span onclick="document.getElementById('catIconAdd').value='${e}'; this.closest('.emoji-picker').querySelectorAll('span').forEach(s=>s.style.background=''); this.style.background='rgba(102,126,234,0.3)'">${e}</span>`).join('');
+        picker.innerHTML = CATEGORY_EMOJIS.map((cat, catIdx) => `<div class="emoji-cat"><div class="emoji-cat-header" onclick="toggleEmojiCat(this)"><span class="emoji-cat-arrow">▶</span> ${cat.name}</div><div class="emoji-cat-body">${cat.emojis.map(e => `<span onclick="document.getElementById('catIconAdd').value='${e}';this.closest('.emoji-picker').querySelectorAll('span').forEach(s=>s.style.background='');this.style.background='rgba(102,126,234,0.3)'">${e}</span>`).join('')}</div></div>`).join('');
     }
 }
 
@@ -2067,9 +2111,8 @@ function toggleEmojiPicker(ci) {
     if (!picker) return;
     const isOpen = picker.classList.toggle('open');
     if (isOpen && picker.children.length === 0) {
-        picker.innerHTML = CATEGORY_EMOJIS.map(e =>
-            `<span onclick="selectCatEmoji(${ci}, '${e}')">${e}</span>`
-        ).join('');
+        picker.innerHTML = CATEGORY_EMOJIS.map((cat, catIdx) => `<div class="emoji-cat"><div class="emoji-cat-header" onclick="toggleEmojiCat(this)"><span class="emoji-cat-arrow">▶</span> ${cat.name}</div><div class="emoji-cat-body">${cat.emojis.map(e => `<span onclick="selectCatEmoji(${ci}, '${e}')">${e}</span>`).join('')}</div></div>`).join('');
+                setTimeout(() => { const h = picker.querySelector('.emoji-cat-header'); if(h) h.click(); }, 50);
     }
 }
 
@@ -2080,6 +2123,15 @@ function selectCatEmoji(ci, emoji) {
     // 关闭 picker
     const picker = document.getElementById('emojiPicker-' + ci);
     if (picker) picker.classList.remove('open');
+}
+
+function toggleEmojiCat(header) {
+    const catDiv = header.closest('.emoji-cat');
+    const body = catDiv ? catDiv.querySelector('.emoji-cat-body') : null;
+    if (!body) return;
+    const isOpen = body.classList.toggle('open');
+    const arrow = header.querySelector('.emoji-cat-arrow');
+    if (arrow) arrow.textContent = isOpen ? '▼' : '▶';
 }
 
 function toggleModalEmojiPicker() {
@@ -2219,6 +2271,12 @@ function deleteSite(ci, si) {
 }
 
 // ===== 保存 =====
+async function loadPageContent(page, elId) {
+    const el = document.getElementById(elId);
+    if (!el) return;
+    try { const r = await fetch('/api/page-content?page=' + page); const d = await r.json(); el.value = d.content || ''; } catch {}
+}
+
 async function saveData() {
     data.site.title = document.getElementById('siteTitle').value.trim() || '东白湖之家';
     data.site.subtitle = document.getElementById('siteSubtitle').value.trim() || '上网从这里开始';
@@ -2226,16 +2284,22 @@ async function saveData() {
 
     // 收集外观配置
     const newConfig = {
-        site_title: document.getElementById('siteTitle').value.trim() || '东白湖之家',
-        site_subtitle: document.getElementById('siteSubtitle').value.trim() || '上网从这里开始',
-        site_logo: document.getElementById('siteLogo').value.trim(),
-        logo_mode: document.querySelector('input[name="titleMode"]:checked')?.value || 'logo_text',
-        logo_width_pct: parseInt(document.getElementById('logoWidthSlider').value) || 50,
-        logo_height_pct: parseInt(document.getElementById('logoHeightSlider').value) || 50,
-        logo_scale_mode: document.getElementById('logoAspectLock').checked,
-        logo_layout: document.querySelector('input[name="logoLayout"]:checked')?.value || 'horizontal',
-        logo_rotate: parseInt(document.getElementById('logoRotateSlider').value) || 0,
-        logo_text: document.getElementById('logoText').value.trim(),
+        site_title: document.getElementById('siteTitle').value?.trim() || '',
+        site_subtitle: document.getElementById('siteSubtitle').value?.trim() || '',
+        logo_text: document.getElementById('logoText').value?.trim() || '',
+        contactEmail: document.getElementById('contactEmail')?.value?.trim() || '',
+        contactPhone: document.getElementById('contactPhone')?.value?.trim() || '',
+        contactWechat: document.getElementById('contactWechat')?.value?.trim() || '',
+        contactQQ: document.getElementById('contactQQ')?.value?.trim() || '',
+        contactTelegram: document.getElementById('contactTelegram')?.value?.trim() || '',
+        contactDiscord: document.getElementById('contactDiscord')?.value?.trim() || '',
+        contactTwitter: document.getElementById('contactTwitter')?.value?.trim() || '',
+        contactGithub: document.getElementById('contactGithub')?.value?.trim() || '',
+        contactAddress: document.getElementById('contactAddress')?.value?.trim() || '',
+        footerPoweredBy: document.getElementById('footerPoweredBy')?.value?.trim() || '',
+        footerCopyright: document.getElementById('footerCopyright')?.value?.trim() || '',
+        site_custom_css: document.getElementById('customCss').value.trim(),
+        site_custom_js: document.getElementById('customJs').value.trim(),
         logo_text_font: document.getElementById('logoTextFont').value,
         logo_text_size: parseInt(document.getElementById('logoTextSize').value) || 48,
         logo_text_color: document.getElementById('logoTextColorText').value.trim() || '#ffffff',
@@ -2300,6 +2364,11 @@ async function saveData() {
         const configResult = await configRes.json();
 
         if (dataResult.success && configResult.success) {
+                        // 保存页面内容
+            await Promise.all(['about','privacy','terms'].map(async function(page) {
+                await fetch('/api/page-content', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ page: page, content: document.getElementById('page' + page.charAt(0).toUpperCase() + page.slice(1)).value.trim() }) });
+            }));
+
             // 保存成功 → 自动刷新页面，使排序结果立即可见
             setTimeout(() => location.reload(), 800);
             toast('✅ 保存成功！页面即将刷新...', 'success');

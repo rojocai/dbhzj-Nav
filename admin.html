@@ -2641,6 +2641,10 @@ function translateAdmin() {
         '网站标题': 'Site Title',
         '字体': 'Font',
         '默认字体': 'Default Font',
+
+        '📤 图标上传': '📤 Upload Icon',
+        '📤 上传': '📤 Upload',
+        '留空自动从链接域名抓取 favicon.ico': 'Auto-fetch favicon from domain',
     };
     const w = document.createTreeWalker(document.body, 4);
     while (w.nextNode()) { const n = w.currentNode; const t = n.nodeValue.trim(); if (map[t]) n.nodeValue = t.replace(t, map[t]); }

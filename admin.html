@@ -2158,7 +2158,7 @@ function addSite(ci) {
                 <div style="display:flex;gap:8px;align-items:center;">
                     <input id="siteIcon" placeholder="留空自动抓取" style="flex:1;">
                     <img id="iconPreview" style="width:24px;height:24px;border-radius:4px;display:none;">
-                    <button type="button" class="btn-ghost" onclick="uploadToField('siteIcon', true)" style="padding:8px 12px;font-size:12px;white-space:nowrap;">📤</button>
+                    onclick="uploadToField('siteIcon', true)" style="padding:8px 12px;font-size:12px;white-space:nowrap;">📤 图标上传</button>
                 </div>
             </div>
             <div class="form-group">
@@ -2241,7 +2241,7 @@ function editSite(ci, si) {
                 <label>图标URL</label>
                 <div style="display:flex;gap:8px;">
                     <input id="siteIcon" value="${esc(s.icon||'')}" style="flex:1;">
-                    <button type="button" class="btn-ghost" onclick="uploadToField('siteIcon', true)" style="padding:8px 12px;font-size:12px;white-space:nowrap;">📤 图标上传</button>
+                    onclick="uploadToField('siteIcon', true)" style="padding:8px 12px;font-size:12px;white-space:nowrap;">📤 图标上传</button>
                 </div>
             </div>
         </div>
@@ -2608,10 +2608,16 @@ function translateAdmin() {
         '交通 & 音乐': 'Transport & Music',
 
         '无': 'None',
+        '图标': 'Icon',
+        '新分类': 'New Category',
+        '📤 上传': '📤 Upload',
+        '未选择任何文件': 'No file selected',
+        '（可拖动窗口边缘缩放）': '(drag corners to resize)',
         '留空则使用PC端图片': 'Use desktop image if empty',
         '选择文件': 'Choose File',
         '未选择文件': 'No file chosen',
         '留空不显示图标': 'Hide icon if empty',
+        '留空则不显示图标': 'Hide icon if empty',
     };
     const w = document.createTreeWalker(document.body, 4);
     while (w.nextNode()) { const n = w.currentNode; const t = n.nodeValue.trim(); if (map[t]) n.nodeValue = t.replace(t, map[t]); }

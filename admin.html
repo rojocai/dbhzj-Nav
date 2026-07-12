@@ -2148,24 +2148,24 @@ function addSite(ci) {
     showModal('添加站点', `
         <div class="form-group"><label>站点名称</label><input id="siteName" placeholder="ChatGPT"></div>
         <div class="form-group"><label>链接</label><input id="siteUrl" placeholder="https://chatgpt.com" onchange="autoFetchIcon()"></div>
-        <div class="form-row">
-            <div class="form-group">
+        <div class="form-row" style="display:flex;gap:8px;">
+            <div class="form-group" style="flex:0 0 auto;">
                 <label>序号 (数字越小越靠前)</label>
-                <input id="siteOrder" type="number" min="1" value="${nextOrder}" placeholder="1">
+                <input id="siteOrder" type="number" min="1" value="${nextOrder}" placeholder="1" style="width:80px;">
             </div>
-            <div class="form-group">
-                <label>图标 <span id="iconFetchStatus" style="font-size:11px;color:#888;"></span></label>
+            <div class="form-group" style="flex:1;">
+                <label>图标URL <span id="iconFetchStatus" style="font-size:11px;color:#888;"></span></label>
                 <div style="display:flex;gap:8px;align-items:center;">
                     <input id="siteIcon" placeholder="留空自动抓取" style="flex:1;">
                     <img id="iconPreview" style="width:24px;height:24px;border-radius:4px;display:none;">
-                    onclick="uploadToField('siteIcon', true)" style="padding:8px 12px;font-size:12px;white-space:nowrap;">📤 图标上传</button>
+                    <button type="button" class="btn-ghost" onclick="uploadToField('siteIcon', true)" style="padding:8px 12px;font-size:12px;white-space:nowrap;">📤 图标上传</button>
                 </div>
             </div>
-            <div class="form-group">
-                <label>说明（鼠标悬停时显示）</label>
-                <textarea id="siteDesc" placeholder="例如：AI 对话助手" oninput="updateDescCount()" style="min-height:50px;resize:vertical;"></textarea>
-                <div style="text-align:right;font-size:11px;color:#666;margin-top:2px;"><span id="descCount">0</span> 字</div>
-            </div>
+        </div>
+        <div class="form-group">
+            <label>说明（鼠标悬停时显示）</label>
+            <textarea id="siteDesc" placeholder="例如：AI 对话助手" oninput="updateDescCount()" style="min-height:50px;resize:vertical;"></textarea>
+            <div style="text-align:right;font-size:11px;color:#666;margin-top:2px;"><span id="descCount">0</span> 字</div>
         </div>
     `, async () => {
         const name = document.getElementById('siteName').value.trim();
@@ -2232,23 +2232,23 @@ function editSite(ci, si) {
     showModal('编辑站点', `
         <div class="form-group"><label>站点名称</label><input id="siteName" value="${esc(s.name)}"></div>
         <div class="form-group"><label>链接</label><input id="siteUrl" value="${esc(s.url)}"></div>
-        <div class="form-row">
-            <div class="form-group">
+        <div class="form-row" style="display:flex;gap:8px;">
+            <div class="form-group" style="flex:0 0 auto;">
                 <label>序号 (数字越小越靠前)</label>
-                <input id="siteOrder" type="number" min="1" value="${s.order ?? 1}" placeholder="1">
+                <input id="siteOrder" type="number" min="1" value="${s.order ?? 1}" placeholder="1" style="width:80px;">
             </div>
-            <div class="form-group">
+            <div class="form-group" style="flex:1;">
                 <label>图标URL</label>
-                <div style="display:flex;gap:8px;">
+                <div style="display:flex;gap:8px;align-items:center;">
                     <input id="siteIcon" value="${esc(s.icon||'')}" style="flex:1;">
-                    onclick="uploadToField('siteIcon', true)" style="padding:8px 12px;font-size:12px;white-space:nowrap;">📤 图标上传</button>
+                    <img id="iconPreviewE" style="width:24px;height:24px;border-radius:4px;display:none;">
+                    <button type="button" class="btn-ghost" onclick="uploadToField('siteIcon', true)" style="padding:8px 12px;font-size:12px;white-space:nowrap;">📤 图标上传</button>
                 </div>
             </div>
         </div>
         <div class="form-group">
             <label>说明（鼠标悬停时显示）</label>
-            <textarea id="siteDesc" oninput="updateDescCount()" style="min-height:50px;resize:vertical;">${esc(s.desc||'')}</textarea>
-            <div style="text-align:right;font-size:11px;color:#666;margin-top:2px;"><span id="descCount">${(s.desc||'').length}</span> 字</div>
+            <textarea id="siteDesc" placeholder="例如：AI 对话助手" oninput="updateDescCount()" style="min-height:50px;resize:vertical;"></textarea>
         </div>
     `, () => {
         data.categories[ci].sites[si] = {
